@@ -23,7 +23,8 @@
 # (3) single integer representation (0 - 51)
 # (4) two integer (rank, suit) representation
 #
-# _Avoid the construction of new Card objects._  Use the Card objects already created in allCards, retrieving them via
+# _Avoid the construction of new Card objects._
+# Use the Card objects already created in allCards, retrieving them via
 # (1) strCardMap using the method get(String),
 # (2) getCard(int), or
 # (3) getCard(int rank, int suit).
@@ -127,7 +128,7 @@ if __name__ == "__main__":
     print("isRed:\t\t", allCards[0].isRed())
     print("getId:\t\t", allCards[0].getId())
     print("__str__:\t", str(allCards[0]))
-    
+
     print("\nHighest-valued card:\n")
     print("getRank:\t", allCards[Card.NUM_CARDS - 1].getRank())
     print("getSuit:\t", allCards[Card.NUM_CARDS - 1].getSuit())
