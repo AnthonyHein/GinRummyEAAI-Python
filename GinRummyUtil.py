@@ -71,18 +71,13 @@ class GinRummyUtil:
 
 	# initialize DEADWOOD_POINTS
 	for rank in range(Deck.NUM_RANKS):
-		DEADWOOD_POINTS += [min(rank + 1, 10)]
+		DEADWOOD_POINTS.append(min(rank + 1, 10))
 
 	# initialize cardBitStrings
 	bitstring = 1
 	for _ in range(Deck.NUM_CARDS):
-		cardBitstrings += [bitstring]
+		cardBitstrings.append(bitstring)
 		bitstring <<= 1
-
-	# build list of lists of meld bitstring where each subsequent meld bitstring
-	# in the list is a superset of previous meld bitstrings
-	meldBitstrings = [];
-	meldBitstringToCardsMap = {};
 
 	# build run meld lists
 	for suit in range(Deck.NUM_SUITS):
@@ -129,7 +124,7 @@ class GinRummyUtil:
 		for i in range(Deck.NUM_CARDS):
 			if bitstring % 2 == 1:
 				cards.append(Deck.allCards[i])
-			bitstring /= 2
+			bitstring //= 2
 		return cards
 
 	# Given a list of cards, return the corresponding card set bitstring
@@ -161,7 +156,7 @@ class GinRummyUtil:
 	def cardsToAllMelds(cards):
 		meldList = []
 		for meldBitstring in GinRummyUtil.cardsToAllMeldBitstrings(cards):
-			meldList.append((GinRummyUtil.bitstringToCards(meldBitstring)))
+			meldList.append(GinRummyUtil.bitstringToCards(meldBitstring))
 		return meldList
 
 	# Given a list of cards, return a list of all card melds lists to which another meld cannot be added.
@@ -253,17 +248,17 @@ class GinRummyUtil:
 		bestMeldSets = []
 		for melds in maximalMeldSets:
 			deadwoodPoints = GinRummyUtil.getDeadwoodPoints1(melds, cards)
-		if deadwoodPoints <= minDeadwoodPoints:
-			if deadwoodPoints < minDeadwoodPoints:
-				minDeadwoodPoints = deadwoodPoints
-				bestMeldSets.clear()
-			bestMeldSets.append(melds)
+			if deadwoodPoints <= minDeadwoodPoints:
+				if deadwoodPoints < minDeadwoodPoints:
+					minDeadwoodPoints = deadwoodPoints
+					bestMeldSets.clear()
+				bestMeldSets.append(melds)
 		return bestMeldSets
 
 	# Return all meld bitstrings.
 	# @return all meld bitstrings
 	def getAllMeldBitstrings():
-		return GinRummyUtil.meldBitstringToCardsMap.keys();
+		return GinRummyUtil.meldBitstringToCardsMap.keys()
 
 # Test GinRummyUtils for a given list of cards specified in the first line.
 if __name__ == "__main__":
