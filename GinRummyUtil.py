@@ -263,8 +263,8 @@ class GinRummyUtil:
 if __name__ == "__main__":
 	cardNames = "AD AS AH AC 2C 3C 4C 4H 4D 4S"
 	# adding these (impossible in Gin Rummy) causes great combinatorial complexity: 3S 5S 6S 7S 7D 7C 7H 8H 9H TH TC TS TD 9D JD QD KD KS KH KC";
-	# String cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S KD"
-	# String cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S 4H"
+	# cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S KD"
+	# cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S 4H"
 	cardNameArr = cardNames.split(" ")
 	cards = []
 	for cardName in cardNameArr:
