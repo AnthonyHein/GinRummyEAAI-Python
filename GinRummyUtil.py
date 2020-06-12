@@ -177,7 +177,7 @@ class GinRummyUtil:
 			queue.append(meldIndexSet)
 
 		while not len(queue) == 0:
-			meldIndexSet = queue.pop(0)
+			meldIndexSet = sorted(queue.pop(0))
 			if meldIndexSet in closed:
 				continue
 			meldSetBitstring = 0
@@ -203,7 +203,6 @@ class GinRummyUtil:
 					cardSets.append(GinRummyUtil.bitstringToCards(meldBitstring))
 
 				maximalMeldSets.append(cardSets)
-
 		return maximalMeldSets
 
 	# Given a list of card melds and a hand of cards, return the unmelded deadwood points for that hand
