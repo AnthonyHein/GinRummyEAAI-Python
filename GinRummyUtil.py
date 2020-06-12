@@ -37,9 +37,12 @@
 # 02111-1307, USA.
 #-------------------------------------------------------------------------------
 
+from Deck import Deck
+from Card import Card
+
 class GinRummyUtil:
 
-    # Goal score
+	# Goal score
 	GOAL_SCORE = 100
 
 
@@ -56,267 +59,230 @@ class GinRummyUtil:
 	# Deadwood points indexed by card rank
 	DEADWOOD_POINTS = []
 
-    # Card bitstrings indexed by card id number
+	# Card bitstrings indexed by card id number
 	cardBitstrings = []
 
 	# List of lists of meld bitstrings.  Melds appearing after melds in lists are supersets, so the
 	# first meld not made in a list makes further checking in that list unnnecessary.
-	meldBitstrings
+	meldBitstrings = []
 
-    # Map from meld bitstrings to corresponding lists of cards
-	meldBitstringToCardsMap;
+	# Map from meld bitstrings to corresponding lists of cards
+	meldBitstringToCardsMap = {}
 
 	# initialize DEADWOOD_POINTS
-    for _ in range(Deck.NUM_RANKS):
-        DEADWOOD_POINTS += [min(rank + 1, 10)]
+	for rank in range(Deck.NUM_RANKS):
+		DEADWOOD_POINTS += [min(rank + 1, 10)]
 
 	# initialize cardBitStrings
 	bitstring = 1
-    for _ in range(Deck.NUM_CARDS):
+	for _ in range(Deck.NUM_CARDS):
 		cardBitstrings += [bitstring]
 		bitstring <<= 1
 
 	# build list of lists of meld bitstring where each subsequent meld bitstring
-    # in the list is a superset of previous meld bitstrings
+	# in the list is a superset of previous meld bitstrings
 	meldBitstrings = [];
 	meldBitstringToCardsMap = {};
 
 	# build run meld lists
-    for suit in range(Deck.NUM_SUITS):
-        for runRankStart in range(Deck.NUM_RANKS - 2):
-            bitstringList = []
-            cards = []
-            c = Deck.getCard(numRankStart, suit)
-            cards.append(c)
-            meldBitstring = cardBitstrings[c.getId()]
-            c = Deck.getCard(runRankStart + 1, suit)
-            cards.append(c)
-            meldBitstring |= cardBitstrings[c.getId()]
-            for rank in range(runRankStart + 2, Deck.NUM_RANKS):
-                c = Deck.getCard(rank, suit)
-                cards.append(c)
-                meldBitstring |= cardBitstrings[c.getId()]
-                bitstringList.append(meldBitstring)
-                meldBitstringToCardsMap.update({meldBitstring : cards.copy()})
-            meldBitstrings.append(bitstringList)
+	for suit in range(Deck.NUM_SUITS):
+		for runRankStart in range(Deck.NUM_RANKS - 2):
+			bitstringList = []
+			cards = []
+			c = Deck.getCard(rank=runRankStart, suit=suit)
+			cards.append(c)
+			meldBitstring = cardBitstrings[c.getId()]
+			c = Deck.getCard(rank=runRankStart + 1, suit=suit)
+			cards.append(c)
+			meldBitstring |= cardBitstrings[c.getId()]
+			for rank in range(runRankStart + 2, Deck.NUM_RANKS):
+				c = Deck.getCard(rank=rank, suit=suit)
+				cards.append(c)
+				meldBitstring |= cardBitstrings[c.getId()]
+				bitstringList.append(meldBitstring)
+				meldBitstringToCardsMap.update({meldBitstring : cards.copy()})
+			meldBitstrings.append(bitstringList)
 
 
 	# build set meld lists
-    for rank in range(Deck.NUM_RANKS):
-        cards = []
-        for suit in range(Deck.NUM_SUITS):
-            cards.append(Deck.getCard(rank, suit))
-        for suit in range(Deck.NUM_SUITS + 1):
-            cardSet = cards.copy()
-            if suit < Deck.NUM_SUITS:
-                cardSet.remove(Deck.getCard(rank, suit))
-            bitstringList = []
-            meldBitstring = 0
-            for card in cardSet:
-                meldBitstring |= cardBitStrings[card.getId()]
-            bitstringList.append(meldBitstring)
-            meldBitstringToCardsMap.update({meldBitstring : cardSet})
-            meldBitstrings.append(bitstringList)
+	for rank in range(Deck.NUM_RANKS):
+		cards = []
+		for suit in range(Deck.NUM_SUITS):
+			cards.append(Deck.getCard(rank=rank, suit=suit))
+		for suit in range(Deck.NUM_SUITS + 1):
+			cardSet = cards.copy()
+			if suit < Deck.NUM_SUITS:
+				cardSet.remove(Deck.getCard(rank=rank, suit=suit))
+			bitstringList = []
+			meldBitstring = 0
+			for card in cardSet:
+				meldBitstring |= cardBitstrings[card.getId()]
+			bitstringList.append(meldBitstring)
+			meldBitstringToCardsMap.update({meldBitstring : cardSet})
+			meldBitstrings.append(bitstringList)
 
 	# Given card set bitstring, return the corresponding list of cards
 	# @param bitstring card set bitstring
 	# @return the corresponding list of cards
-	bitstringToCards(Long bitstring) {
-		ArrayList<Card> cards = new ArrayList<Card>();
-		for (int i = 0; i < Card.NUM_CARDS; i++) {
-			if (bitstring % 2 == 1)
-				cards.add(Card.allCards[i]);
-			bitstring /= 2;
-		}
-		return cards;
-	}
+	def bitstringToCards(bitstring):
+		cards = []
+		for i in range(Deck.NUM_CARDS):
+			if bitstring % 2 == 1:
+				cards.append(Deck.allCards[i])
+			bitstring /= 2
+		return cards
 
-	/**
-	 * Given a list of cards, return the corresponding card set bitstring
-	 * @param cards a list of cards
-	 * @return the corresponding card set bitstring
-	 */
-	public static long cardsToBitstring(ArrayList<Card> cards) {
-		long bitstring = 0L;
-		for (Card card : cards)
-			bitstring |= cardBitstrings[card.getId()];
-		return bitstring;
-	}
+	# Given a list of cards, return the corresponding card set bitstring
+	# @param cards a list of cards
+	# @return the corresponding card set bitstring
+	def cardsToBitstring(cards):
+		bitstring = 0
+		for card in cards:
+			bitstring |= GinRummyUtil.cardBitstrings[card.getId()]
+		return bitstring
 
-	/**
-	 * Given a list of cards, return a list of all meld bitstrings that apply to that list of cards
-	 * @param cards a list of cards
-	 * @return a list of all meld bitstrings that apply to that list of cards
-	 */
-	public static ArrayList<Long> cardsToAllMeldBitstrings(ArrayList<Card> cards) {
-		ArrayList<Long> bitstringList = new ArrayList<Long>();
-		long cardsBitstring = cardsToBitstring(cards);
-		for (ArrayList<Long> meldBitstringList : meldBitstrings)
-			for (long meldBitstring : meldBitstringList)
-				if ((meldBitstring & cardsBitstring) == meldBitstring)
-					bitstringList.add(meldBitstring);
-				else
-					break;
-		return bitstringList;
-	}
+	# Given a list of cards, return a list of all meld bitstrings that apply to that list of cards
+	# @param cards a list of cards
+	# @return a list of all meld bitstrings that apply to that list of cards
+	def cardsToAllMeldBitstrings(cards):
+		bitstringList = []
+		cardsBitstring = GinRummyUtil.cardsToBitstring(cards)
+		for meldBitstringList in GinRummyUtil.meldBitstrings:
+			for meldBitstring in meldBitstringList:
+				if (meldBitstring & cardsBitstring) == meldBitstring:
+					bitstringList.append(meldBitstring)
+				else:
+					break
+		return bitstringList
 
-	/**
-	 * Given a list of cards, return a list of all lists of card melds that apply to that list of cards
-	 * @param cards a list of cards
-	 * @return a list of all lists of card melds that apply to that list of cards
-	 */
-	public static ArrayList<ArrayList<Card>> cardsToAllMelds(ArrayList<Card> cards) {
-		ArrayList<ArrayList<Card>> meldList = new ArrayList<ArrayList<Card>>();
-		for (long meldBitstring : cardsToAllMeldBitstrings(cards))
-			meldList.add(bitstringToCards(meldBitstring));
-		return meldList;
-	}
+	# Given a list of cards, return a list of all lists of card melds that apply to that list of cards
+	# @param cards a list of cards
+	# @return a list of all lists of card melds that apply to that list of cards
+	def cardsToAllMelds(cards):
+		meldList = []
+		for meldBitstring in GinRummyUtil.cardsToAllMeldBitstrings(cards):
+			meldList.append((GinRummyUtil.bitstringToCards(meldBitstring)))
+		return meldList
 
-	/**
-	 * Given a list of cards, return a list of all card melds lists to which another meld cannot be added.
-	 * This corresponds to all ways one may maximally meld, although this doesn't imply minimum deadwood/cards in the sets of melds.
-	 * @param cards a list of cards
-	 * @return a list of all card melds lists to which another meld cannot be added
-	 */
-	public static ArrayList<ArrayList<ArrayList<Card>>> cardsToAllMaximalMeldSets(ArrayList<Card> cards) {
-		ArrayList<ArrayList<ArrayList<Card>>> maximalMeldSets = new ArrayList<ArrayList<ArrayList<Card>>>();
-		ArrayList<Long> meldBitstrings = cardsToAllMeldBitstrings(cards);
-		HashSet<HashSet<Integer>> closed = new HashSet<HashSet<Integer>>();
-		Queue<HashSet<Integer>> queue = new LinkedList<HashSet<Integer>>();
-		HashSet<Integer> allIndices = new HashSet<Integer>();
-		for (int i = 0; i < meldBitstrings.size(); i++) {
-			HashSet<Integer> meldIndexSet = new HashSet<Integer>();
-			meldIndexSet.add(i);
-			allIndices.add(i);
-			queue.add(meldIndexSet);
-		}
-		while (!queue.isEmpty()) {
-			HashSet<Integer> meldIndexSet = queue.poll();
-//			System.out.println(meldSet);
-			if (closed.contains(meldIndexSet))
-				continue;
-			long meldSetBitstring = 0L;
-			for (int meldIndex : meldIndexSet)
-				meldSetBitstring |= meldBitstrings.get(meldIndex);
-			closed.add(meldIndexSet);
-			boolean isMaximal = true;
-			for (int i = 0; i < meldBitstrings.size(); i++) {
-				if (meldIndexSet.contains(i))
-					continue;
-				long meldBitstring = meldBitstrings.get(i);
-				if ((meldSetBitstring & meldBitstring) == 0) { // meld has no overlap with melds in set
-					isMaximal = false;
-					HashSet<Integer> newMeldIndexSet = (HashSet<Integer>) meldIndexSet.clone();
-					newMeldIndexSet.add(i);
-					queue.add(newMeldIndexSet);
-				}
-			}
-			if (isMaximal) {
-				ArrayList<ArrayList<Card>> cardSets = new ArrayList<ArrayList<Card>>();
-				for (int meldIndex : meldIndexSet) {
-					long meldBitstring  = meldBitstrings.get(meldIndex);
-					cardSets.add(bitstringToCards(meldBitstring));
-				}
-				maximalMeldSets.add(cardSets);
-			}
-		}
-		return maximalMeldSets;
-	}
+	# Given a list of cards, return a list of all card melds lists to which another meld cannot be added.
+	# This corresponds to all ways one may maximally meld, although this doesn't imply minimum deadwood/cards in the sets of melds.
+	# @param cards a list of cards
+	# @return a list of all card melds lists to which another meld cannot be added
+	def cardsToAllMaximalMeldSets(cards):
+		maximalMeldSets = []
+		meldBitstrings = GinRummyUtil.cardsToAllMeldBitstrings(cards)
+		closed = []
+		queue = []
+		allIndices = []
 
-	/**
-	 * Given a list of card melds and a hand of cards, return the unmelded deadwood points for that hand
-	 * @param melds a list of card melds
-	 * @param hand hand of cards
-	 * @return the unmelded deadwood points for that hand
-	 */
-	public static int getDeadwoodPoints(ArrayList<ArrayList<Card>> melds, ArrayList<Card> hand) {
-		HashSet<Card> melded = new HashSet<Card>();
-		for (ArrayList<Card> meld : melds)
-			for (Card card : meld)
-				melded.add(card);
-		int deadwoodPoints = 0;
-		for (Card card : hand)
-			if (!melded.contains(card))
-				deadwoodPoints += DEADWOOD_POINTS[card.rank];
-		return deadwoodPoints;
-	}
+		for i in range(len(meldBitstrings)):
+			meldIndexSet = []
+			meldIndexSet.append(i)
+			allIndices.append(i)
+			queue.append(meldIndexSet)
 
-	/**
-	 * Return the deadwood points for an individual given card.
-	 * @param card given card
-	 * @return the deadwood points for an individual given card
-	 */
-	public static int getDeadwoodPoints(Card card) {
-		return DEADWOOD_POINTS[card.rank];
-	}
+		while not len(queue) == 0:
+			meldIndexSet = queue.pop(0)
+			if meldIndexSet in closed:
+				continue
+			meldSetBitstring = 0
+			for meldIndex in meldIndexSet:
+				meldSetBitstring |= meldBitstrings[meldIndex]
+			closed.append(meldIndexSet)
+			isMaximal = True
+			for i in range(len(meldBitstrings)):
+				if i in meldIndexSet:
+					continue
+				meldBitstring = meldBitstrings[i]
+				if (meldSetBitstring & meldBitstring) == 0:
+					# meld has no overlap with melds in set
+					isMaximal = False
+					newMeldIndexSet = meldIndexSet.copy()
+					newMeldIndexSet.append(i)
+					queue.append(newMeldIndexSet)
 
-	/**
-	 * Return the deadwood points for a list of given cards.
-	 * @param cards list of given cards
-	 * @return the deadwood points for a list of given cards
-	 */
-	public static int getDeadwoodPoints(ArrayList<Card> cards) {
-		int deadwood = 0;
-		for (Card card : cards)
-			deadwood += DEADWOOD_POINTS[card.rank];
-		return deadwood;
-	}
+			if isMaximal:
+				cardSets = []
+				for meldIndex in meldIndexSet:
+					meldBitstring = meldBitstrings[meldIndex]
+					cardSets.append(GinRummyUtil.bitstringToCards(meldBitstring))
 
-	/**
-	 * Returns a list of list of melds that all leave a minimal deadwood count.
-	 * @param cards
-	 * @return a list of list of melds that all leave a minimal deadwood count
-	 */
-	// Note: This is actually a "weighted maximum coverage problem". See https://en.wikipedia.org/wiki/Maximum_coverage_problem
-	public static ArrayList<ArrayList<ArrayList<Card>>> cardsToBestMeldSets(ArrayList<Card> cards) {
-		int minDeadwoodPoints = Integer.MAX_VALUE;
-		ArrayList<ArrayList<ArrayList<Card>>> maximalMeldSets = cardsToAllMaximalMeldSets(cards);
-		ArrayList<ArrayList<ArrayList<Card>>> bestMeldSets = new ArrayList<ArrayList<ArrayList<Card>>>();
-		for (ArrayList<ArrayList<Card>> melds : maximalMeldSets) {
-			int deadwoodPoints = getDeadwoodPoints(melds, cards);
-			if (deadwoodPoints <= minDeadwoodPoints) {
-				if (deadwoodPoints < minDeadwoodPoints) {
-					minDeadwoodPoints = deadwoodPoints;
-					bestMeldSets.clear();
-				}
-				bestMeldSets.add(melds);
-			}
-		}
-		return bestMeldSets;
-	}
+				maximalMeldSets.append(cardSets)
 
-	/**
-	 * Return all meld bitstrings.
-	 * @return all meld bitstrings
-	 */
-	public static Set<Long> getAllMeldBitstrings() {
-		return meldBitstringToCardsMap.keySet();
-	}
+		return maximalMeldSets
 
-	/**
-	 * Test GinRummyUtils for a given list of cards specified in the first line.
-	 * @param args (unused)
-	 */
-	public static void main(String[] args) {
-		String cardNames = "AD AS AH AC 2C 3C 4C 4H 4D 4S"; // adding these (impossible in Gin Rummy) causes great combinatorial complexity: 3S 5S 6S 7S 7D 7C 7H 8H 9H TH TC TS TD 9D JD QD KD KS KH KC";
-//		String cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S KD";
-//		String cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S 4H";
+	# Given a list of card melds and a hand of cards, return the unmelded deadwood points for that hand
+	# @param melds a list of card melds
+	# @param hand hand of cards
+	# @return the unmelded deadwood points for that hand
+	def getDeadwoodPoints1(melds, hand):
+		melded = []
+		for meld in melds:
+			for card in meld:
+				melded.append(card)
+		deadwoodPoints = 0
+		for card in hand:
+			if card not in melded:
+				deadwoodPoints += GinRummyUtil.DEADWOOD_POINTS[card.rank]
+		return deadwoodPoints
 
-		String[] cardNameArr = cardNames.split(" ");
-		ArrayList<Card> cards = new ArrayList<Card>();
-		for (String cardName : cardNameArr)
-			cards.add(Card.strCardMap.get(cardName));
-		System.out.println("Hand: " + cards);
-		System.out.println("Bitstring representation as long: " + cardsToBitstring(cards));
-		System.out.println("All melds:");
-		for (ArrayList<Card> meld : cardsToAllMelds(cards))
-			System.out.println(meld);
-		System.out.println("Maximal meld sets:");
-		for (ArrayList<ArrayList<Card>> meldSet : cardsToAllMaximalMeldSets(cards))
-			System.out.println(meldSet);
-		System.out.println("Best meld sets:");
-		for (ArrayList<ArrayList<Card>> meldSet : cardsToBestMeldSets(cards))
-			System.out.println(getDeadwoodPoints(meldSet, cards) + ":" + meldSet);
-	}
 
-}
+	# Return the deadwood points for an individual given card.
+	# @param card given card
+	# @return the deadwood points for an individual given card
+	def getDeadwoodPoints2(card):
+		return GinRummyUtil.DEADWOOD_POINTS[card.rank]
+
+	# Return the deadwood points for a list of given cards.
+	# @param cards list of given cards
+	# @return the deadwood points for a list of given cards
+	def getDeadwoodPoints3(cards):
+		deadwood = 0
+		for card in cards:
+			deadwood += GinRummyUtil.DEADWOOD_POINTS[card.rank]
+		return deadwood
+
+	# Returns a list of list of melds that all leave a minimal deadwood count.
+	# @param cards
+	# @return a list of list of melds that all leave a minimal deadwood count
+	# Note: This is actually a "weighted maximum coverage problem". See https://en.wikipedia.org/wiki/Maximum_coverage_problem
+
+	def cardsToBestMeldSets(cards):
+		minDeadwoodPoints = 10**8
+		maximalMeldSets = GinRummyUtil.cardsToAllMaximalMeldSets(cards)
+		bestMeldSets = []
+		for melds in maximalMeldSets:
+			deadwoodPoints = GinRummyUtil.getDeadwoodPoints1(melds, cards)
+		if deadwoodPoints <= minDeadwoodPoints:
+			if deadwoodPoints < minDeadwoodPoints:
+				minDeadwoodPoints = deadwoodPoints
+				bestMeldSets.clear()
+			bestMeldSets.append(melds)
+		return bestMeldSets
+
+	# Return all meld bitstrings.
+	# @return all meld bitstrings
+	def getAllMeldBitstrings():
+		return GinRummyUtil.meldBitstringToCardsMap.keys();
+
+# Test GinRummyUtils for a given list of cards specified in the first line.
+if __name__ == "__main__":
+	cardNames = "AD AS AH AC 2C 3C 4C 4H 4D 4S"
+	# adding these (impossible in Gin Rummy) causes great combinatorial complexity: 3S 5S 6S 7S 7D 7C 7H 8H 9H TH TC TS TD 9D JD QD KD KS KH KC";
+	# String cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S KD"
+	# String cardNames = "AC AH AS 2C 2H 2S 3C 3H 3S 4H"
+	cardNameArr = cardNames.split(" ")
+	cards = []
+	for cardName in cardNameArr:
+		cards.append(Deck.strCardMap[cardName])
+	print("Hand: " + str(cards))
+	print("Bitstring representation as long: " + str(GinRummyUtil.cardsToBitstring(cards)))
+	print("All melds: ")
+	for meld in GinRummyUtil.cardsToAllMelds(cards):
+		print(meld)
+	print("Maximal meld sets:")
+	for meldSet in GinRummyUtil.cardsToAllMaximalMeldSets(cards):
+		print(meldSet)
+	print("Best meld sets:")
+	for meldSet in GinRummyUtil.cardsToBestMeldSets(cards):
+		print(str(GinRummyUtil.getDeadwoodPoints1(meldSet, cards)) + ":" + str(meldSet))

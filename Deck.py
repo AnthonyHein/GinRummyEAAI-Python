@@ -67,9 +67,9 @@ class Deck:
     # @param suit index
     # @return corresponding Card object
     def getCard(id=-1, rank=-1, suit=-1):
-        if id > 0:
+        if id >= 0:
             return Deck.allCards[id]
-        elif rank > 0 and suit > 0:
+        elif rank >= 0 and suit >= 0:
             return Deck.allCards[suit * Deck.NUM_RANKS + rank]
         else:
             print("ERROR: bad parameters to getCard in Deck class.", file=stderr)
