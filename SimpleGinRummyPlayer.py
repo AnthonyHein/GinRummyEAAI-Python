@@ -99,18 +99,18 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 			remainingCards = list(self.cards)
 			remainingCards.remove(card)
 			bestMeldSets = GinRummyUtil.cardsToBestMeldSets(remainingCards)
-			deadwood = GinRummyUtil.getDeadwoodPoints(remainingCards) if len(bestMeldSets) == 0 \
-					   else GinRummyUtil.getDeadwoodPoints(bestMeldSets[0], remainingCards)
+			deadwood = GinRummyUtil.getDeadwoodPoints3(remainingCards) if len(bestMeldSets) == 0 \
+					   else GinRummyUtil.getDeadwoodPoints1(bestMeldSets[0], remainingCards)
 			if deadwood <= minDeadwood:
 				if deadwood < minDeadwood:
 					minDeadwood = deadwood
 					candidateCards.clear()
 				candidateCards.append(card)
-			# Prevent future repeat of draw, discard pair.
-			discard = candidateCards[randint(0, len(candidateCards)-1)]
-			drawDiscard = [drawnCard, discard]
-			self.drawDiscardBitstrings.append(drawDiscard)
-			return discard
+		# Prevent future repeat of draw, discard pair.
+		discard = candidateCards[randint(0, len(candidateCards)-1)]
+		drawDiscard = [drawnCard, discard]
+		self.drawDiscardBitstrings.append(GinRummyUtil.cardsToBitstring(drawDiscard))
+		return discard
 
 
 	# Report that the given player has discarded a given card.
@@ -130,7 +130,7 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 		# Check if deadwood of maximal meld is low enough to go out. 
 		bestMeldSets = GinRummyUtil.cardsToBestMeldSets(self.cards) # List[List[List[Card]]]
 		if not opponentKnocked and (len(bestMeldSets) == 0 or \
-		 GinRummyUtil.getDeadwoodPoints(bestMeldSets[0], self.cards) > \
+		 GinRummyUtil.getDeadwoodPoints1(bestMeldSets[0], self.cards) > \
 		 GinRummyUtil.MAX_DEADWOOD):
 			return None
 		if len(bestMeldSets) == 0:
