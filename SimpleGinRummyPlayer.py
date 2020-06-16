@@ -5,17 +5,17 @@
 
 # -------------------------------------------------------------------------------
 #  SimpleGinRummyPlayer
-#  Implements a random dummy Gin Rummy player that has the following trivial, poor play policy: 
+#  Implements a random dummy Gin Rummy player that has the following trivial, poor play policy:
 #  Ignore opponent actions and cards no longer in play.
 #  Draw face up card only if it becomes part of a meld.  Draw face down card otherwise.
 #  Discard a highest ranking unmelded card without regard to breaking up pairs, etc.
 #  Knock as early as possible.
-# 
+#
 #  @author Todd W. Neller
 #  @version 1.0
-# ------------------------------------------------------------------------------- 
+# -------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------- 
+# -------------------------------------------------------------------------------
 # Copyright (C) 2020 Todd Neller
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -30,11 +30,11 @@
 # To receive a copy of the GNU General Public License, write to the Free
 # Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
-# ------------------------------------------------------------------------------- 
+# -------------------------------------------------------------------------------
 
 from typing import List, TypeVar
 from random import randint
-import GinRummyUtil
+from GinRummyUtil import GinRummyUtil
 from GinRummyPlayer import GinRummyPlayer
 
 Card = TypeVar('Card')
@@ -46,7 +46,7 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 	# @param startingPlayerNum starting player number (0/1)
 	# @param cards dealt cards
 	def startGame(self, playerNum: int, startingPlayerNum: int, cards: List[Card]) -> None:
-		self.playerNum = playerNum 
+		self.playerNum = playerNum
 		self.startingPlayerNum = startingPlayerNum
 		self.cards = list(cards)
 		self.opponentKnocked = False
@@ -68,7 +68,7 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 				return True
 		return False
 
-	# Report that the given player has drawn a given card and, if known, what the card is.  
+	# Report that the given player has drawn a given card and, if known, what the card is.
 	# If the card is unknown because it is drawn from the face-down draw pile, the drawnCard is null.
 	# Note that a player that returns false for willDrawFaceUpCard will learn of their face-down draw from this method.
 	# @param playerNum - player drawing a card
@@ -79,8 +79,8 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 			self.cards.append(drawnCard)
 			self.drawnCard = drawnCard
 
-	# Get the player's discarded card.  If you took the top card from the discard pile, 
-	# you must discard a different card. 
+	# Get the player's discarded card.  If you took the top card from the discard pile,
+	# you must discard a different card.
 	# If this is not a card in the player's possession, the player forfeits the game.
 	# @return the player's chosen card for discarding
 	def getDiscard(self) -> Card:
@@ -108,7 +108,7 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 				candidateCards.append(card)
 		# Prevent future repeat of draw, discard pair.
 		discard = candidateCards[randint(0, len(candidateCards)-1)]
-		drawDiscard = [drawnCard, discard]
+		drawDiscard = [self.drawnCard, discard]
 		self.drawDiscardBitstrings.append(GinRummyUtil.cardsToBitstring(drawDiscard))
 		return discard
 
@@ -121,15 +121,15 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 		if playerNum == self.playerNum:
 			self.cards.remove(discardedCard)
 
-	# At the end of each turn, this method is called and the player that cannot (or will not) end the round will return a null value.  
-	# However, the first player to "knock" (that is, end the round), and then their opponent, will return an ArrayList of ArrayLists of melded cards.  
+	# At the end of each turn, this method is called and the player that cannot (or will not) end the round will return a null value.
+	# However, the first player to "knock" (that is, end the round), and then their opponent, will return an ArrayList of ArrayLists of melded cards.
 	# All other cards are counted as "deadwood", unless they can be laid off (added to) the knocking player's melds.
 	# When final melds have been reported for the other player, a player should return their final melds for the round.
 	# @return null if continuing play and opponent hasn't melded, or an ArrayList of ArrayLists of melded cards.
 	def getFinalMelds(self) -> List[List[Card]]:
-		# Check if deadwood of maximal meld is low enough to go out. 
+		# Check if deadwood of maximal meld is low enough to go out.
 		bestMeldSets = GinRummyUtil.cardsToBestMeldSets(self.cards) # List[List[List[Card]]]
-		if not opponentKnocked and (len(bestMeldSets) == 0 or \
+		if not self.opponentKnocked and (len(bestMeldSets) == 0 or \
 		 GinRummyUtil.getDeadwoodPoints1(bestMeldSets[0], self.cards) > \
 		 GinRummyUtil.MAX_DEADWOOD):
 			return None
@@ -144,7 +144,7 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 		# Melds ignored by simple player, but could affect which melds to make for complex player.
 		if playerNum != self.playerNum:
 			self.opponentKnocked = True
-	 
+
 	# Report current player scores, indexed by 0-based player number.
 	# @param scores current player scores, indexed by 0-based player number
 	def reportScores(self, scores: List[int]) -> None:
@@ -165,6 +165,3 @@ class SimpleGinRummyPlayer(GinRummyPlayer):
 	def reportFinalHand(self, playerNum: int, hand: List[Card]) -> None:
 		# Ignored by simple player, but could affect strategy of more complex player.
 		return
-
-
-

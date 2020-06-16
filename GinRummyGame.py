@@ -31,8 +31,9 @@
 
 import random
 import time
-import GinRummyUtil
-import SimpleGinRummyPlayer
+from Deck import Deck
+from GinRummyUtil import GinRummyUtil
+from SimpleGinRummyPlayer import SimpleGinRummyPlayer
 
 class GinRummyGame:
 
@@ -80,13 +81,13 @@ class GinRummyGame:
             for i in range(2):
                 GinRummyGame.players[i].startGame(i, startingPlayer, hands[i]);
                 if GinRummyGame.playVerbose:
-                    printf("Player %d is dealt %s.\n", i, hands[i])
+                    print("Player %d is dealt %s.\n" % (i, hands[i]))
             if GinRummyGame.playVerbose:
-                printf("Player %d starts.\n", startingPlayer)
+                print("Player %d starts.\n" % (startingPlayer))
             discards = []
             discards.append(deck.pop())
             if GinRummyGame.playVerbose:
-                printf("The initial face up card is %s.\n", discards[len(discards) - 1])
+                print("The initial face up card is %s.\n" % (discards[len(discards) - 1]))
             firstFaceUpCard = discards[len(discards) - 1]
             turnsTaken = 0
             knockMelds = None
@@ -100,9 +101,9 @@ class GinRummyGame:
                 # offer draw face-up iff not 3rd turn with first face up card (decline automatically in that case)
                 if not (turnsTaken == 2 and faceUpCard == firstFaceUpCard):
                     # both players declined and 1st player must draw face down
-                    drawFaceUp = players[currentPlayer].willDrawFaceUpCard(faceUpCard)
-                    if playVerbose and not drawFaceUp and faceUpCard == firstFaceUpCard and turnsTaken < 2:
-                        printf("Player %d declines %s.\n", currentPlayer, firstFaceUpCard)
+                    drawFaceUp = GinRummyGame.players[currentPlayer].willDrawFaceUpCard(faceUpCard)
+                    if GinRummyGame.playVerbose and not drawFaceUp and faceUpCard == firstFaceUpCard and turnsTaken < 2:
+                        print("Player %d declines %s.\n" % (currentPlayer, firstFaceUpCard))
 
                 if not (not drawFaceUp and turnsTaken < 2 and faceUpCard == firstFaceUpCard):
                     # continue with turn if not initial declined option
@@ -110,37 +111,37 @@ class GinRummyGame:
                     for i in range(2):
                         GinRummyGame.players[i].reportDraw(currentPlayer, drawCard if i == currentPlayer or drawFaceUp else None)
                     if GinRummyGame.playVerbose:
-                        printf("Player %d draws %s.\n", currentPlayer, drawCard)
+                        print("Player %d draws %s.\n" % (currentPlayer, drawCard))
                     hands[currentPlayer].append(drawCard)
 
                     # DISCARD
                     discardCard = GinRummyGame.players[currentPlayer].getDiscard()
-                    if not hands[currentPlayer].contains(discardCard) or discardCard == faceUpCard:
+                    if not discardCard in hands[currentPlayer] or discardCard == faceUpCard:
                         if GinRummyGame.playVerbose:
-                            printf("Player %d discards %s illegally and forfeits.\n", currentPlayer, discardCard)
+                            print("Player %d discards %s illegally and forfeits.\n" % (currentPlayer, discardCard))
                         return opponent;
 
                     hands[currentPlayer].remove(discardCard)
                     for i in range(2):
                         GinRummyGame.players[i].reportDiscard(currentPlayer, discardCard)
                     if GinRummyGame.playVerbose:
-                        printf("Player %d discards %s.\n", currentPlayer, discardCard)
+                        print("Player %d discards %s.\n" % (currentPlayer, discardCard))
                     discards.append(discardCard)
                     if GinRummyGame.playVerbose:
                         unmeldedCards = hands[currentPlayer].copy()
                         bestMelds = GinRummyUtil.cardsToBestMeldSets(unmeldedCards)
                         if len(bestMelds) == 0:
-                            printf("Player %d has %s with %d deadwood.\n", currentPlayer, unmeldedCards, GinRummyUtil.getDeadwoodPoints(unmeldedCards))
+                            print("Player %d has %s with %d deadwood.\n" % (currentPlayer, unmeldedCards, GinRummyUtil.getDeadwoodPoints3(unmeldedCards)))
                         else:
                             melds = bestMelds[0]
                             for meld in melds:
                                 for card in meld:
                                     unmeldedCards.remove(card)
                             melds.extend(unmeldedCards)
-                            printf("Player %d has %s with %d deadwood.\n", currentPlayer, melds, GinRummyUtil.getDeadwoodPoints(unmeldedCards))
+                            print("Player %d has %s with %d deadwood.\n" % (currentPlayer, melds, GinRummyUtil.getDeadwoodPoints3(unmeldedCards)))
 
                     # CHECK FOR KNOCK
-                    knockMelds = players[currentPlayer].getFinalMelds()
+                    knockMelds = GinRummyGame.players[currentPlayer].getFinalMelds()
                     if knockMelds != None:
                         # player knocked; end of round
                         break
@@ -156,53 +157,53 @@ class GinRummyGame:
                 unmelded = handBitstring
                 for meld in knockMelds:
                     meldBitstring = GinRummyUtil.cardsToBitstring(meld)
-                    if (not GinRummyUtil.getAllMeldBitstrings().contains(meldBitstring)) or ((meldBitstring & unmelded) != meldBitstring):
+                    if (not meldBitstring in GinRummyUtil.getAllMeldBitstrings()) or ((meldBitstring & unmelded) != meldBitstring):
                         # non-meld or meld not in hand
                         if GinRummyGame.playVerbose:
-                            printf("Player %d melds %s illegally and forfeits.\n", currentPlayer, knockMelds)
+                            print("Player %d melds %s illegally and forfeits.\n" % (currentPlayer, knockMelds))
                         return opponent
                     unmelded &= ~meldBitstring # remove successfully melded cards from
 
                 # compute knocking deadwood
-                knockingDeadwood = GinRummyUtil.getDeadwoodPoints(knockMelds, hands[currentPlayer])
+                knockingDeadwood = GinRummyUtil.getDeadwoodPoints1(knockMelds, hands[currentPlayer])
                 if knockingDeadwood > GinRummyUtil.MAX_DEADWOOD:
                     if GinRummyGame.playVerbose:
-                        printf("Player %d melds %s with greater than %d deadwood and forfeits.\n", currentPlayer, knockMelds, knockingDeadwood)
+                        print("Player %d melds %s with greater than %d deadwood and forfeits.\n" % (currentPlayer, knockMelds, knockingDeadwood))
                     return opponent
 
                 meldsCopy = []
                 for meld in knockMelds:
                     meldsCopy.append(meld.copy())
                 for i in range(2):
-                    players[i].reportFinalMelds(currentPlayer, meldsCopy)
+                    GinRummyGame.players[i].reportFinalMelds(currentPlayer, meldsCopy)
                 if GinRummyGame.playVerbose:
                     if knockingDeadwood > 0:
-                        printf("Player %d melds %s with %d deadwood from %s.\n", currentPlayer, knockMelds, knockingDeadwood, GinRummyUtil.bitstringToCards(unmelded))
+                        print("Player %d melds %s with %d deadwood from %s.\n" % (currentPlayer, knockMelds, knockingDeadwood, GinRummyUtil.bitstringToCards(unmelded)))
                     else:
-                        printf("Player %d goes gin with melds %s.\n", currentPlayer, knockMelds)
+                        print("Player %d goes gin with melds %s.\n" % (currentPlayer, knockMelds))
 
                 # get opponent meld
-                opponentMelds = players[opponent].getFinalMelds();
+                opponentMelds = GinRummyGame.players[opponent].getFinalMelds();
                 meldsCopy = []
                 for meld in opponentMelds:
                     meldsCopy.append(meld.copy())
                 for i in range(2):
-                    players[i].reportFinalMelds(opponent, meldsCopy)
+                    GinRummyGame.players[i].reportFinalMelds(opponent, meldsCopy)
 
                 # check legality of opponent meld
                 opponentHandBitstring = GinRummyUtil.cardsToBitstring(hands[opponent])
                 opponentUnmelded = opponentHandBitstring
                 for meld in opponentMelds:
                     meldBitstring = GinRummyUtil.cardsToBitstring(meld)
-                    if (not GinRummyUtil.getAllMeldBitstrings().contains(meldBitstring)) or ((meldBitstring & opponentUnmelded) != meldBitstring):
+                    if (meldBitstring not in GinRummyUtil.getAllMeldBitstrings()) or ((meldBitstring & opponentUnmelded) != meldBitstring):
                         # non-meld or meld not in hand
                         if GinRummyGame.playVerbose:
-                            printf("Player %d melds %s illegally and forfeits.\n", opponent, opponentMelds)
+                            print("Player %d melds %s illegally and forfeits.\n" % (opponent, opponentMelds))
                         return currentPlayer
                     opponentUnmelded &= ~meldBitstring # remove successfully melded cards from
 
                 if GinRummyGame.playVerbose:
-                    printf("Player %d melds %s.\n", opponent, opponentMelds)
+                    print("Player %d melds %s.\n" % (opponent, opponentMelds))
 
                 # lay off on knocking meld (if not gin)
                 unmeldedCards = GinRummyUtil.bitstringToCards(opponentUnmelded)
@@ -219,15 +220,15 @@ class GinRummyGame:
                                 newMeld = meld.copy()
                                 newMeld.append(card)
                                 newMeldBitstring = GinRummyUtil.cardsToBitstring(newMeld)
-                                if GinRummyUtil.getAllMeldBitstrings().contains(newMeldBitstring):
+                                if newMeldBitstring in GinRummyUtil.getAllMeldBitstrings():
                                     layOffCard = card
                                     layOffMeld = meld
                                     break
                             if layOffCard != None:
                                 if GinRummyGame.playVerbose:
-                                    printf("Player %d lays off %s on %s.\n", opponent, layOffCard, layOffMeld)
+                                    print("Player %d lays off %s on %s.\n" % (opponent, layOffCard, layOffMeld))
                                 for i in range(2):
-                                    players[i].reportLayoff(opponent, layOffCard, layOffMeld.copy())
+                                    GinRummyGame.players[i].reportLayoff(opponent, layOffCard, layOffMeld.copy())
                                 unmeldedCards.remove(layOffCard)
                                 layOffMeld.append(layOffCard)
                                 cardWasLaidOff = True
@@ -237,28 +238,30 @@ class GinRummyGame:
 
                 opponentDeadwood = 0
                 for card in unmeldedCards:
-                    opponentDeadwood += GinRummyUtil.getDeadwoodPoints(card)
+                    opponentDeadwood += GinRummyUtil.getDeadwoodPoints2(card)
                 if GinRummyGame.playVerbose:
-                    printf("Player %d has %d deadwood with %s\n", opponent, opponentDeadwood, unmeldedCards)
+                    print("Player %d has %d deadwood with %s\n" % (opponent, opponentDeadwood, unmeldedCards))
 
                 # compare deadwood and compute new scores
                 if knockingDeadwood == 0:
                     # gin round win
                     scores[currentPlayer] += GinRummyUtil.GIN_BONUS + opponentDeadwood
                     if GinRummyGame.playVerbose:
-                        printf("Player %d scores the gin bonus of %d plus opponent deadwood %d for %d total points.\n", currentPlayer, GinRummyUtil.GIN_BONUS, opponentDeadwood, GinRummyUtil.GIN_BONUS + opponentDeadwood)
+                        print("Player %d scores the gin bonus of %d plus opponent deadwood %d for %d total points.\n" % \
+                        (currentPlayer, GinRummyUtil.GIN_BONUS, opponentDeadwood, GinRummyUtil.GIN_BONUS + opponentDeadwood))
 
                 elif knockingDeadwood < opponentDeadwood:
                     # non-gin round win:
                     scores[currentPlayer] += opponentDeadwood - knockingDeadwood;
                     if GinRummyGame.playVerbose:
-                        printf("Player %d scores the deadwood difference of %d.\n", currentPlayer, opponentDeadwood - knockingDeadwood)
+                        print("Player %d scores the deadwood difference of %d.\n" % (currentPlayer, opponentDeadwood - knockingDeadwood))
 
                 else:
                     # undercut win for opponent
                     scores[opponent] += GinRummyUtil.UNDERCUT_BONUS + knockingDeadwood - opponentDeadwood;
                     if GinRummyGame.playVerbose:
-                        printf("Player %d undercuts and scores the undercut bonus of %d plus deadwood difference of %d for %d total points.\n", opponent, GinRummyUtil.UNDERCUT_BONUS, knockingDeadwood - opponentDeadwood, GinRummyUtil.UNDERCUT_BONUS + knockingDeadwood - opponentDeadwood)
+                        print("Player %d undercuts and scores the undercut bonus of %d plus deadwood difference of %d for %d total points.\n" % \
+                        (opponent, GinRummyUtil.UNDERCUT_BONUS, knockingDeadwood - opponentDeadwood, GinRummyUtil.UNDERCUT_BONUS + knockingDeadwood - opponentDeadwood))
 
                 startingPlayer = 1 if startingPlayer == 0 else 0 # starting player alternates
 
@@ -270,38 +273,35 @@ class GinRummyGame:
             # report final hands
             for i in range(2):
                 for j in range(2):
-                    players[i].reportFinalHand(j, hands[j].copy())
+                    GinRummyGame.players[i].reportFinalHand(j, hands[j].copy())
 
             # score reporting
             if GinRummyGame.playVerbose:
-                printf("Player\tScore\n0\t%d\n1\t%d\n", scores[0], scores[1])
+                print("Player\tScore\n0\t%d\n1\t%d\n" % (scores[0], scores[1]))
             for i in range(2):
-                players[i].reportScores(scores.copy())
+                GinRummyGame.players[i].reportScores(scores.copy())
 
         if GinRummyGame.playVerbose:
-            printf("Player %s wins.\n", 0 if scores[0] > scores[1] else 1)
+            print("Player %s wins.\n" % (0 if scores[0] > scores[1] else 1))
         return 0 if scores[0] >= GinRummyUtil.GOAL_SCORE else 1
 
 
 # Test and demonstrate the use of the GinRummyGame class.
 if __name__ == "__main__":
 
-    if True:
-        print("Not yet configured for unit testing.")
-    else:
-        # Single verbose demonstration game
-        setPlayVerbose(True)
-        GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer()).play()
+    # Single verbose demonstration game
+    GinRummyGame.setPlayVerbose(True)
+    GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer()).play()
 
-        # Multiple non-verbose games
-        setPlayVerbose(False)
-        numGames = 1000
-        numP1Wins = 0
-        game = GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer())
-        startMs = int(round(time.time() * 1000))
-        for i in range(numGames):
-            numP1Wins += game.play()
+    # Multiple non-verbose games
+    GinRummyGame.setPlayVerbose(False)
+    numGames = 1000
+    numP1Wins = 0
+    game = GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer())
+    startMs = int(round(time.time() * 1000))
+    for i in range(numGames):
+        numP1Wins += game.play()
 
-        totalMs = int(round(time.time() * 1000)) - startMs
-        printf("%d games played in %d ms.\n", numGames, totalMs)
-        printf("Games Won: P0:%d, P1:%d.\n", numGames - numP1Wins, numP1Wins)
+    totalMs = int(round(time.time() * 1000)) - startMs
+    print("%d games played in %d ms.\n" % (numGames, totalMs))
+    print("Games Won: P0:%d, P1:%d.\n" % (numGames - numP1Wins, numP1Wins))
