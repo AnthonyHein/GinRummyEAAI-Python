@@ -292,7 +292,7 @@ if __name__ == "__main__":
 
     # Single verbose demonstration game
     GinRummyGame.setPlayVerbose(True)
-    GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer()).play()
+    GinRummyGame(NFSPPlayer(), SimpleGinRummyPlayer()).play()
 
     # Multiple non-verbose games
     GinRummyGame.setPlayVerbose(False)

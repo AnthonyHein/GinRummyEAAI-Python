@@ -102,10 +102,10 @@ class NFSPPlayer(GinRummyPlayer):
     # @return whether or not player will draw the given face-up card on the draw pile
     def willDrawFaceUpCard(self, card: Card) -> bool:
         # Return true if card would be a part of a meld, false otherwise.
+        self.faceUpCard = card
         # update state
         self.set_discard(card)
 
-        # TODO: get action from agent
         self.state['legal_actions'] = [2,3]
         action, probs = self.agent.eval_step(self.state)
 
@@ -143,6 +143,8 @@ class NFSPPlayer(GinRummyPlayer):
         # Discard a random card (not just drawn face up) leaving minimal deadwood points.
         self.state['legal_actions'] = []
         for card in self.cards:
+            if card == self.drawnCard and self.drawnCard == self.faceUpCard:
+                continue
             self.state['legal_actions'].append(card.getId()+6)
         action, probs = self.agent.eval_step(self.state)
         for card in self.cards:
