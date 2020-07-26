@@ -34,6 +34,7 @@ import time
 from Deck import Deck
 from GinRummyUtil import GinRummyUtil
 from SimpleGinRummyPlayer import SimpleGinRummyPlayer
+from NFSPPlayer import NFSPPlayer
 
 class GinRummyGame:
 
@@ -295,9 +296,9 @@ if __name__ == "__main__":
 
     # Multiple non-verbose games
     GinRummyGame.setPlayVerbose(False)
-    numGames = 1000
+    numGames = 100
     numP1Wins = 0
-    game = GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer())
+    game = GinRummyGame(NFSPPlayer(), SimpleGinRummyPlayer())
     startMs = int(round(time.time() * 1000))
     for i in range(numGames):
         numP1Wins += game.play()
