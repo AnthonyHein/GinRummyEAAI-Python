@@ -17,32 +17,31 @@ public class LoadTensorflowModel {
         // SavedModelBundle svd = SavedModelBundle.load("gin_rummy_nfsp4", "serve");
         // System.out.println(svd.metaGraphDef());
 
-        try (Graph g = new Graph()) {
+        Graph g = new Graph();
 
-            g.importGraphDef(graph);
+        g.importGraphDef(graph);
 
-            // Print for tags.
-            Iterator<Operation> ops = g.operations();
-            while (ops.hasNext()) {
-                Operation op = ops.next();
-                // Types are: Add, Const, Placeholder, Sigmoid, MatMul, Identity
-                if (op.type().equals("Placeholder")) {
-                    System.out.println("Type: " + op.type() + ", Name: " + op.name());
-                }
+        // Print for tags.
+        Iterator<Operation> ops = g.operations();
+        while (ops.hasNext()) {
+            Operation op = ops.next();
+            // Types are: Add, Const, Placeholder, Sigmoid, MatMul, Identity
+            if (op.type().equals("Placeholder")) {
+                System.out.println("Type: " + op.type() + ", Name: " + op.name() + ", NumOutput: " + op.numOutputs());
+                System.out.println("OUTPUT: " + op.output(0).shape());
             }
+        }
 
-            //open session using imported graph
-            try (Session sess = new Session(g)) {
-                float[][] inputData = {{4, 3, 2, 1}};
+        //open session using imported graph
+        Session sess = new Session(g);
+        float[][] inputData = {{4, 3, 2, 1}};
 
-                // We have to create tensor to feed it to session,
-                // unlike in Python where you just pass Numpy array
-                Tensor inputTensor = Tensor.create(inputData, Float.class);
-                float[][] output = predict(sess, inputTensor);
-                for (int i = 0; i < output[0].length; i++) {
-                    System.out.println(output[0][i]);
-                }
-            }
+        // We have to create tensor to feed it to session,
+        // unlike in Python where you just pass Numpy array
+        Tensor inputTensor = Tensor.create(inputData, Float.class);
+        float[][] output = predict(sess, inputTensor);
+        for (int i = 0; i < output[0].length; i++) {
+            System.out.println(output[0][i]);
         }
     }
 

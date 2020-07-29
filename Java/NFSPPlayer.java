@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import java.util.HashMap;
+
 
 /**
  * Implements a random dummy Gin Rummy player that has the following trivial, poor play policy:
@@ -43,78 +45,121 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 
  */
 
- def __init__(self):
-     self.env = rlcard.make('gin-rummy')
-     with self.graph.as_default():
-         self.agent = NFSPAgent(self.sess,
-                       scope='nfsp' + str(i),
-                       action_num=self.env.action_num,
-                       state_shape=[4,52],
-                       hidden_layers_sizes=[128],
-                       anticipatory_param=0.5,
-                       batch_size=256,
-                       rl_learning_rate=0.01,
-                       sl_learning_rate=0.005,
-                       min_buffer_size_to_learn=memory_init_size,
-                       q_replay_memory_size=int(1e5),
-                       q_replay_memory_init_size=memory_init_size,
-                       train_every = train_every,
-                       q_train_every=train_every,
-                       q_batch_size=256,
-                       q_mlp_layers=[128])
-     print("restoring checkpoint...")
-     check_point_path = "gin_rummy_nfsp4"
-     with self.sess.as_default():
-         with self.graph.as_default():
-             saver = tf.train.Saver()
-             saver.restore(self.sess, tf.train.latest_checkpoint(check_point_path))
-     print("checkpoint restored!")
-
-
-
-
 public class NFSPPlayer implements GinRummyPlayer {
-    // Training parameters.
-    private static int evaluateEvery = 100;
-    private static int evaluateNum = 100;
-    private static int episodeNum = 6000;
-    private static int memoryInitSize = 1000;
-    private static int trainEvery = 64;
-
     // Agent
-    protected SavedModelBundle svMdlBundle;
     protected Graph graph;
     protected Session sess;
 
+    // Player management
 	protected int playerNum;
 	@SuppressWarnings("unused")
 	protected int startingPlayerNum;
+
+    // Player state
 	protected ArrayList<Card> cards = new ArrayList<Card>();
-	protected Random random = new Random();
+    protected int action;
+
+    // Board management
 	protected boolean opponentKnocked = false;
-	Card faceUpCard, drawnCard;
-	ArrayList<Long> drawDiscardBitstrings = new ArrayList<Long>();
+	protected Card faceUpCard, drawnCard;
+	protected ArrayList<Long> drawDiscardBitstrings = new ArrayList<Long>();
+    protected HashMap<String, Object> state;
+
+    // ====================================
+    // Action_ids:
+    //        0 -> score_player_0_id
+    //        1 -> score_player_1_id
+    //        2 -> draw_card_id
+    //        3 -> pick_up_discard_id
+    //        4 -> declare_dead_hand_id
+    //        5 -> gin_id
+    //        6 to 57 -> discard_id card_id
+    //        58 to 109 -> knock_id card_id
+    // ====================================
+
+    // DON'T TOUCH THIS --------------------------------------------------------
+    public HashMap<String, Object> initGameGetState() {
+        // Create state map.
+        HashMap<String, int[]> state = new HashMap<String, int[]>();
+
+        // Create hand array.
+        state.put("hand", new int[52]);
+
+        // Mark cards in hand.
+        int[] hand = state.get("hand");
+        for (Card card : this.cards) {
+            hand[card.getId()] = 1;
+        }
+
+        // Create space for other parameters.
+        state.put("topDiscard", new int[52]);
+        state.put("deadCards", new int[52]);
+        state.put("opponentKnownCards", new int[52]);
+
+        // Compile representation of observations.
+        int[][] obs = { state.get("hand"),
+                        state.get("topDiscard"),
+                        state.get("deadCards"),
+                        state.get("opponentKnownCards")};
+
+        // Created Extracted State.
+        HashMap<String, Object> extractedState = new HashMap<String, Object>();
+        extractedState.put("obs", obs);
+        extractedState.put("legalActions", null);
+
+        return extractedState;
+
+    }
+
+    public int getStateIndex(String label) {
+        if (label.equals("hand")) {
+            return 0;
+        }
+        else if (label.equals("topDiscard")) {
+            return 1;
+        }
+        else if (label.equals("deadCards")) {
+            return 2;
+        }
+        else if (label.equals("opponentKnownCards")) {
+            return 3;
+        }
+        else {
+            throw new ArrayIndexOutOfBoundsException("Unknown label.");
+        }
+    }
+
+    public void setDiscard(Card card) {
+        int[] newTopDiscard = new int[52];
+        newTopDiscard[card.getId()] = 1;
+        ((int[][]) this.state.get("obs"))[getStateIndex("topDiscard")] = newTopDiscard;
+    }
+    // -------------------------------------------------------------------------
 
 	@Override
 	public void startGame(int playerNum, int startingPlayerNum, Card[] cards) {
+        // Basic stuff.
         this.playerNum = playerNum;
 		this.startingPlayerNum = startingPlayerNum;
 		this.cards.clear();
 		for (Card card : cards)
 			this.cards.add(card);
-		opponentKnocked = false;
-		drawDiscardBitstrings.clear();
+		this.opponentKnocked = false;
+		this.drawDiscardBitstrings.clear();
+        hthis.faceUpCard = null;
+        this.drawnCard = null;
+        this.action = null;
 
-        // Load Model
-        this.graph = Graph()
+        this.state = self.initGameGetState();
+
+        // Load Saved Model.
+        this.graph = new Graph();
         Path modelPath = Paths.get("saved_graph_file");
         byte[] graphDefBytes = Files.readAllBytes(modelPath);
         this.graph.importGraphDef(graphDefBytes);
 
         // Create a session
-        this.sess = Session(this.graph);
-
-
+        this.sess = new Session(this.graph);
 	}
 
 	@Override
