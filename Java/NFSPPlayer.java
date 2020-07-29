@@ -8,6 +8,10 @@ import org.tensorflow.Tensor;
 import org.tensorflow.TensorFlow;
 import org.tensorflow.SavedModelBundle;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 
 /**
  * Implements a random dummy Gin Rummy player that has the following trivial, poor play policy:
@@ -101,18 +105,16 @@ public class NFSPPlayer implements GinRummyPlayer {
 		opponentKnocked = false;
 		drawDiscardBitstrings.clear();
 
-        // Create empty graph
-        this.graph = Graph();
-        String path = "../gin__rummy_nfsp4/checkpoint.pb";
-        byte[] graphDefBytes = Files.readAllBytes(path);
-
-        // Reconstruct graph from file
+        // Load Model
+        this.graph = Graph()
+        Path modelPath = Paths.get("saved_graph_file");
+        byte[] graphDefBytes = Files.readAllBytes(modelPath);
         this.graph.importGraphDef(graphDefBytes);
 
         // Create a session
         this.sess = Session(this.graph);
 
-        
+
 	}
 
 	@Override
