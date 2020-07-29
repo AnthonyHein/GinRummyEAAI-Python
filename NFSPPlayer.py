@@ -66,6 +66,7 @@ class NFSPPlayer(GinRummyPlayer):
         inds = {'hand': 0, 'top_discard': 1, 'dead_cards': 2, \
                 'opponent_known_cards': 3}
         return inds[label]
+
     def set_discard(self, card):
         self.state['obs'][self.get_state_index('top_discard')] = np.zeros(52, dtype=int)
         self.state['obs'][self.get_state_index('top_discard')][card.getId()] = 1
