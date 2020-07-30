@@ -34,13 +34,12 @@ import time
 from Deck import Deck
 from GinRummyUtil import GinRummyUtil
 from SimpleGinRummyPlayer import SimpleGinRummyPlayer
-from SimpleGinRummyPlayer2 import SimpleGinRummyPlayer2
 import numpy as np
 
 # TRACKING
-tracking_states = []
-tracking_states2 = []
-tracking_hands = []
+# tracking_states = []
+# tracking_states2 = []
+# tracking_hands = []
 
 def one_hot(cards):
     ret = np.zeros(52)
@@ -114,9 +113,9 @@ class GinRummyGame:
             turnsTaken = 0
             knockMelds = None
 
-            tracking_pastdiscards = {0: np.zeros(52), 1:  np.zeros(52)}
-            tracking_pastpickups = {0: np.zeros(52), 1:  np.zeros(52)}
-            tracking_pastnonpickups = {0: np.zeros(52), 1:  np.zeros(52)}
+            # tracking_pastdiscards = {0: np.zeros(52), 1:  np.zeros(52)}
+            # tracking_pastpickups = {0: np.zeros(52), 1:  np.zeros(52)}
+            # tracking_pastnonpickups = {0: np.zeros(52), 1:  np.zeros(52)}
             # while the deck has more than two cards remaining, play round
             while len(deck) > 2:
                 # DRAW
@@ -137,11 +136,11 @@ class GinRummyGame:
                         to_report = drawCard if i == currentPlayer or drawFaceUp else None
                         GinRummyGame.players[i].reportDraw(currentPlayer, to_report)
                         # TRACKING
-                        if i != currentPlayer: # player i is tracking currentPlayer
-                            if drawFaceUp:
-                                tracking_pastpickups[i][faceUpCard.getId()] = 1
-                            else:
-                                tracking_pastnonpickups[i][faceUpCard.getId()] = 1
+                        # if i != currentPlayer: # player i is tracking currentPlayer
+                        #     if drawFaceUp:
+                        #         tracking_pastpickups[i][faceUpCard.getId()] = 1
+                        #     else:
+                        #         tracking_pastnonpickups[i][faceUpCard.getId()] = 1
                     if GinRummyGame.playVerbose:
                         print("Player %d draws %s.\n" % (currentPlayer, drawCard))
                     hands[currentPlayer].append(drawCard)
@@ -157,14 +156,14 @@ class GinRummyGame:
                     for i in range(2):
                         GinRummyGame.players[i].reportDiscard(currentPlayer, discardCard)
                         # TRACKING
-                        if i != currentPlayer: # player i is tracking currentPlayer
-                            tracking_pastdiscards[i][discardCard.getId()] = 1
-                            tracking_pastpickups[i][discardCard.getId()] = 0
-                            tracking_hand = one_hot(GinRummyGame.players[currentPlayer].cards)
-                            tracking_hand[discardCard.getId()] = 0
-                            tracking_hands.append(tracking_hand)
-                            tracking_states.append(np.array([tracking_pastdiscards[i], tracking_pastpickups[i], tracking_pastnonpickups[i]]))
-                            tracking_states2.append(np.array([tracking_pastdiscards[i], tracking_pastpickups[i], tracking_pastnonpickups[i], one_hot(GinRummyGame.players[i].cards)]))
+                        # if i != currentPlayer: # player i is tracking currentPlayer
+                        #     tracking_pastdiscards[i][discardCard.getId()] = 1
+                        #     tracking_pastpickups[i][discardCard.getId()] = 0
+                        #     tracking_hand = one_hot(GinRummyGame.players[currentPlayer].cards)
+                        #     tracking_hand[discardCard.getId()] = 0
+                        #     tracking_hands.append(tracking_hand)
+                        #     tracking_states.append(np.array([tracking_pastdiscards[i], tracking_pastpickups[i], tracking_pastnonpickups[i]]))
+                        #     tracking_states2.append(np.array([tracking_pastdiscards[i], tracking_pastpickups[i], tracking_pastnonpickups[i], one_hot(GinRummyGame.players[i].cards)]))
                     if GinRummyGame.playVerbose:
                         print("Player %d discards %s.\n" % (currentPlayer, discardCard))
                     discards.append(discardCard)
@@ -336,7 +335,7 @@ if __name__ == "__main__":
 
     # Multiple non-verbose games
     GinRummyGame.setPlayVerbose(False)
-    numGames = 20000
+    numGames = 1000
     numP1Wins = 0
     game = GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer())
     startMs = int(round(time.time() * 1000))
@@ -346,9 +345,9 @@ if __name__ == "__main__":
         numP1Wins += game.play()
 
     # TRACKING
-    np.save('states.npy', tracking_states)
-    np.save('states2.npy', tracking_states2)
-    np.save('hands.npy', tracking_hands)
+    # np.save('states.npy', tracking_states)
+    # np.save('states2.npy', tracking_states2)
+    # np.save('hands.npy', tracking_hands)
 
     totalMs = int(round(time.time() * 1000)) - startMs
     print("%d games played in %d ms.\n" % (numGames, totalMs))
