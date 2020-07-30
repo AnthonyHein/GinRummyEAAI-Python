@@ -151,8 +151,7 @@ class GinRummyGame:
                     # DISCARD
                     discardCard = GinRummyGame.players[currentPlayer].getDiscard()
                     if not discardCard in hands[currentPlayer] or discardCard == faceUpCard:
-                        if GinRummyGame.playVerbose:
-                            print("Player %d discards %s illegally and forfeits.\n" % (currentPlayer, discardCard))
+                        print("Player %d discards %s illegally and forfeits.\n" % (currentPlayer, discardCard))
                         return opponent;
 
                     hands[currentPlayer].remove(discardCard)
@@ -202,16 +201,14 @@ class GinRummyGame:
                     meldBitstring = GinRummyUtil.cardsToBitstring(meld)
                     if (not meldBitstring in GinRummyUtil.getAllMeldBitstrings()) or ((meldBitstring & unmelded) != meldBitstring):
                         # non-meld or meld not in hand
-                        if GinRummyGame.playVerbose:
-                            print("Player %d melds %s illegally and forfeits.\n" % (currentPlayer, knockMelds))
+                        print("Player %d melds %s illegally and forfeits.\n" % (currentPlayer, knockMelds))
                         return opponent
                     unmelded &= ~meldBitstring # remove successfully melded cards from
 
                 # compute knocking deadwood
                 knockingDeadwood = GinRummyUtil.getDeadwoodPoints1(knockMelds, hands[currentPlayer])
                 if knockingDeadwood > GinRummyUtil.MAX_DEADWOOD:
-                    if GinRummyGame.playVerbose:
-                        print("Player %d melds %s with greater than %d deadwood and forfeits.\n" % (currentPlayer, knockMelds, knockingDeadwood))
+                    print("Player %d melds %s with greater than %d deadwood and forfeits.\n" % (currentPlayer, knockMelds, knockingDeadwood))
                     return opponent
 
                 meldsCopy = []
@@ -240,8 +237,7 @@ class GinRummyGame:
                     meldBitstring = GinRummyUtil.cardsToBitstring(meld)
                     if (meldBitstring not in GinRummyUtil.getAllMeldBitstrings()) or ((meldBitstring & opponentUnmelded) != meldBitstring):
                         # non-meld or meld not in hand
-                        if GinRummyGame.playVerbose:
-                            print("Player %d melds %s illegally and forfeits.\n" % (opponent, opponentMelds))
+                        print("Player %d melds %s illegally and forfeits.\n" % (opponent, opponentMelds))
                         return currentPlayer
                     opponentUnmelded &= ~meldBitstring # remove successfully melded cards from
 

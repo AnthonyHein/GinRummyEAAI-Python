@@ -52,18 +52,18 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
         lowId = min(card1.getId(), card2.getId())
         if highId - lowId <= 2:
             if highId - lowId == 2:
-                ways += 1 if self.unavailableCards[(highId + lowId) // 2] == 0 else 0 # in between is available
+                ways += self.unavailableCards[(highId + lowId) // 2] == 0 # in between is available
             else:
                 if lowId != 0:
-                    ways +=  1 if self.unavailableCards[lowId - 1] == 0 else 0 # below is available
+                    ways += self.unavailableCards[lowId - 1] == 0 # below is available
                 if highId != 51:
-                    ways += 1 if self.unavailableCards[highId + 1] == 0 else 0 # above is available
+                    ways += self.unavailableCards[highId + 1] == 0 # above is available
         # Set?
         if (highId - lowId) % 13 == 0:
             i = lowId + 13
             while i < 52:
                 if i != highId:
-                    ways += 1 if self.unavailableCards[i] == 0 else 0 # some set is available
+                    ways += self.unavailableCards[i] == 0 # some set is available
                 i += 13
         return ways
 
@@ -154,43 +154,41 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
     # @return the player's chosen card for discarding
     def getDiscard(self) -> CardObj:
         # Discard a random card (not just drawn face up) leaving minimal deadwood points.
-        minArg = -1
-        minScore = 10**5
-        candidateCards = np.zeros(len(self.cards)) # parallel
+        minDeadwood = float('inf')
+        candidateCards = np.copy(self.ownCards)
+        candidateCards *= 1000
 
-        # Look at cards pairwise for availability of melds.
-        for i in range(len(self.cards)):
-            for j in range(i + 1, len(self.cards)):
-                card1 = self.cards[i]
-                card2 = self.cards[j]
-                ways = self._waysCompleteMeld(card1, card2)
-                candidateCards[i] += ways
-                candidateCards[j] += ways
+        if self.drawnCard == self.faceUpCard:
+            candidateCards[self.drawnCard.getId()] = 0
 
-        # Reward cards on belongingness to melds.
         bestMeldSets = GinRummyUtil.cardsToBestMeldSets(self.cards)
         if len(bestMeldSets) == 0:
-            minArg = np.argmin(candidateCards)
-            if self.cards[minArg] == self.drawnCard and self.drawnCard == self.faceUpCard:
-                return self.cards[np.argsort(candidateCards)[1]]
-            return self.cards[minArg]
+            candidateCards = candidateCards / np.sum(candidateCards)
+            discard = np.random.choice(52, 1, p=candidateCards)[0]
+            for card in self.cards:
+                if discard == card.getId():
+                    return card
 
+        # For each best meld set. Find the cards that do not belong to melds.
         for bestMeldSet in bestMeldSets:
-            candidateCardsTemp = np.copy(candidateCards)
+            remainingCards = list(self.cards)
             for meldSet in bestMeldSet:
-                for k in range(len(self.cards)):
-                    if self.cards[k] == self.drawnCard and self.drawnCard == self.faceUpCard:
-                        candidateCardsTemp[k] += 1000
-                    elif self.cards[k] in meldSet:
-                        candidateCardsTemp[k] += 10
-            currMin = np.amin(candidateCardsTemp)
-            if currMin < minScore:
-                minScore = currMin
-                minArg = np.argmin(candidateCardsTemp)
+                for card in meldSet:
+                    candidateCards[card.getId()] -= 5 # reward card for being in meld
+                    remainingCards.remove(card)
 
-        if self.cards[minArg] == self.drawnCard and self.drawnCard == self.faceUpCard:
-            return self.cards[np.argsort(candidateCardsTemp)[1]]
-        return self.cards[minArg]
+            # Now, look at remaining cards pairwise.
+            for i in range(len(remainingCards)):
+                for j in range(i + 1, len(remainingCards)):
+                    card1 = remainingCards[i]
+                    card2 = remainingCards[j]
+                    ways = self._waysCompleteMeld(card1, card2)
+                    candidateCards[[card1.getId(), card2.getId()]] -= ways
+
+        discard = np.argmax(candidateCards)
+        for card in self.cards:
+            if discard == card.getId():
+                return card
 
     # Report that the given player has discarded a given card.
     # @param playerNum the discarding player
