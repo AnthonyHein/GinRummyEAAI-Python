@@ -34,27 +34,30 @@ import time
 from Deck import Deck
 from GinRummyUtil import GinRummyUtil
 from SimpleGinRummyPlayer import SimpleGinRummyPlayer
-import numpy as np
+from OpponentHandEstimationPlayer import OpponentHandEstimationPlayer
 
+#-------------------------------------------------------------------------------
 # TRACKING
+# import numpy as np
 # tracking_states = []
 # tracking_states2 = []
 # tracking_hands = []
-
-def one_hot(cards):
-    ret = np.zeros(52)
-    for card in cards:
-        ret[card.getId()] = 1
-    return ret
-
-def un_one_hot(arr):
-    rankNames = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
-    suitNames = ["C", "H", "S", "D"]
-    ret = []
-    for i in range(len(arr)):
-        if arr[i] != 0:
-            ret.append(rankNames[i%13] + suitNames[i//13])
-    return ret
+#
+# def one_hot(cards):
+#     ret = np.zeros(52)
+#     for card in cards:
+#         ret[card.getId()] = 1
+#     return ret
+#
+# def un_one_hot(arr):
+#     rankNames = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
+#     suitNames = ["C", "H", "S", "D"]
+#     ret = []
+#     for i in range(len(arr)):
+#         if arr[i] != 0:
+#             ret.append(rankNames[i%13] + suitNames[i//13])
+#     return ret
+#-------------------------------------------------------------------------------
 
 class GinRummyGame:
 
@@ -331,17 +334,17 @@ if __name__ == "__main__":
 
     # Single verbose demonstration game
     GinRummyGame.setPlayVerbose(True)
-    GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer()).play()
+    GinRummyGame(SimpleGinRummyPlayer(), OpponentHandEstimationPlayer()).play()
 
     # Multiple non-verbose games
     GinRummyGame.setPlayVerbose(False)
     numGames = 1000
     numP1Wins = 0
-    game = GinRummyGame(SimpleGinRummyPlayer(), SimpleGinRummyPlayer())
+    game = GinRummyGame(SimpleGinRummyPlayer(), OpponentHandEstimationPlayer())
     startMs = int(round(time.time() * 1000))
     for i in range(numGames):
-        if i % 1000 == 0:
-            print(i)
+        if i % 500 == 0:
+            print("Game ... ", i)
         numP1Wins += game.play()
 
     # TRACKING

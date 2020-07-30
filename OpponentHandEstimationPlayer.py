@@ -34,11 +34,12 @@ from random import randint
 from GinRummyUtil import GinRummyUtil
 from GinRummyPlayer import GinRummyPlayer
 
+import numpy as np
 import dill
 
 Card = TypeVar('Card')
 
-class OpponentHandEstimationPlayer(OpponentHandEstimationPlayer):
+class OpponentHandEstimationPlayer(GinRummyPlayer):
 
     #---------------------------------------------------------------------------
     # FUNCTIONS FOR THE RANDOM FORREST CLASSIFIER
@@ -57,6 +58,10 @@ class OpponentHandEstimationPlayer(OpponentHandEstimationPlayer):
         return ret
     #---------------------------------------------------------------------------
 
+    def __init__(self):
+        # Random Forrest Classifier
+        self.rf = dill.load(open("rf.obj","rb"))
+
     # Inform player of 0-based player number (0/1), starting player number (0/1), and dealt cards
     # @param playerNum player's 0-based player number (0/1)
     # @param startingPlayerNum starting player number (0/1)
@@ -69,9 +74,6 @@ class OpponentHandEstimationPlayer(OpponentHandEstimationPlayer):
         self.drawDiscardBitstrings = [] # long[], or List[int]
         self.faceUpCard = None
         self.drawnCard = None
-
-        # Random Forrest Classifier
-        self.rf = dill.load(open("rf.obj","rb"))
 
         # State is array of length 208 made from flattened 4x52 array where
         # row 0 -> past discards (cards opponent discarded)
@@ -102,7 +104,7 @@ class OpponentHandEstimationPlayer(OpponentHandEstimationPlayer):
         return False
 
     # Report that the given player has drawn a given card and, if known, what the card is.
-    # If the card is unknown because it is drawn from the face-down draw pile, the drawnCard is null.
+    # If the card is unknown because it is drawn from the face-down draw pile, the drawnCard is None.
     # Note that a player that returns false for willDrawFaceUpCard will learn of their face-down draw from this method.
     # @param playerNum - player drawing a card
     # @param drawnCard - the card drawn or null, depending on whether the card is known to the player or not, respectively.
@@ -111,6 +113,12 @@ class OpponentHandEstimationPlayer(OpponentHandEstimationPlayer):
         if playerNum == self.playerNum:
             self.cards.append(drawnCard)
             self.drawnCard = drawnCard
+            self.ownCards[drawnCard.getId()] = 1
+        else:
+            if drawnCard != None:
+                self.oppKnownCards[drawnCard.getId()] = 1
+            else:
+                self.oppRejectFaceUp[self.faceUpCard.getId()] = 1
 
     # Get the player's discarded card.  If you took the top card from the discard pile,
     # you must discard a different card.
@@ -150,8 +158,13 @@ class OpponentHandEstimationPlayer(OpponentHandEstimationPlayer):
     # @param discardedCard the card that was discarded
     def reportDiscard(self, playerNum: int, discardedCard: Card) -> None:
         # Ignore other player discards.  Remove from cards if playerNum is this player.
+        self.faceUpCard = discardedCard
         if playerNum == self.playerNum:
             self.cards.remove(discardedCard)
+            self.ownCards[discardedCard.getId()] = 0
+        else:
+            self.oppKnownCards[discardedCard.getId()] = 0
+            self.oppPastDiscards[discardedCard.getId()] = 1
 
     # At the end of each turn, this method is called and the player that cannot (or will not) end the round will return a null value.
     # However, the first player to "knock" (that is, end the round), and then their opponent, will return an ArrayList of ArrayLists of melded cards.
