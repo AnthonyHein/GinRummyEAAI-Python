@@ -36,6 +36,9 @@ from GinRummyUtil import GinRummyUtil
 from SimpleGinRummyPlayer import SimpleGinRummyPlayer
 from OpponentHandEstimationPlayer import OpponentHandEstimationPlayer
 
+import csv
+import numpy as np
+
 #-------------------------------------------------------------------------------
 # TRACKING
 # import numpy as np
@@ -328,26 +331,27 @@ class GinRummyGame:
 # Test and demonstrate the use of the GinRummyGame class.
 if __name__ == "__main__":
 
-    # Single verbose demonstration game
-    GinRummyGame.setPlayVerbose(True)
-    GinRummyGame(SimpleGinRummyPlayer(), OpponentHandEstimationPlayer()).play()
-
-    # Multiple non-verbose games
     GinRummyGame.setPlayVerbose(False)
-    numGames = 1000
-    numP1Wins = 0
-    game = GinRummyGame(SimpleGinRummyPlayer(), OpponentHandEstimationPlayer())
-    startMs = int(round(time.time() * 1000))
-    for i in range(numGames):
-        if i % 500 == 0:
-            print("Game ... ", i)
-        numP1Wins += game.play()
+    player = OpponentHandEstimationPlayer()
+    game = GinRummyGame(SimpleGinRummyPlayer(), player)
 
-    # TRACKING
-    # np.save('states.npy', tracking_states)
-    # np.save('states2.npy', tracking_states2)
-    # np.save('hands.npy', tracking_hands)
+    with open('results02.csv', 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-    totalMs = int(round(time.time() * 1000)) - startMs
-    print("%d games played in %d ms.\n" % (numGames, totalMs))
-    print("Games Won: P0:%d, P1:%d.\n" % (numGames - numP1Wins, numP1Wins))
+        while True:
+
+            low = float(input("Low "))
+            high = float(input("High "))
+            space = int(input("Space "))
+            numGames = int(input("Num "))
+
+            lst = np.linspace(low,high,space).tolist()
+
+            for alpha in lst:
+                numP1Wins = 0
+                print("Playing with alpha: " + str(alpha), end="")
+                player.setAlpha(alpha)
+                for i in range(numGames):
+                    numP1Wins += game.play()
+                print(", Win Rate: " + str(numP1Wins / numGames))
+                csvwriter.writerow([alpha, numP1Wins / numGames])
