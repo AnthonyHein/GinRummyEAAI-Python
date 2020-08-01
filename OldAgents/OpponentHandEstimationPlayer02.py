@@ -53,21 +53,17 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
         if highId - lowId <= 2:
             if highId - lowId == 2:
                 ways += 1 if self.unavailableCards[(highId + lowId) // 2] == 0 else 0 # in between is available
-                ways += 2 if self.ownCards[(highId + lowId) // 2] == 1 else 0 # we actually have that meld
             else:
                 if lowId != 0:
                     ways +=  1 if self.unavailableCards[lowId - 1] == 0 else 0 # below is available
-                    ways += 2 if self.ownCards[lowId - 1] == 1 else 0 # we actually have that meld
                 if highId != 51:
                     ways += 1 if self.unavailableCards[highId + 1] == 0 else 0 # above is available
-                    ways += 2 if self.ownCards[highId + 1] == 1 else 0 # we actually have that meld
         # Set?
         if (highId - lowId) % 13 == 0:
             i = lowId + 13
             while i < 52:
                 if i != highId:
                     ways += 1 if self.unavailableCards[i] == 0 else 0 # some set is available
-                    ways += 2 if self.ownCards[i] == 1 else 0 # we actually have that meld
                 i += 13
         return ways
 
@@ -157,24 +153,10 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
     # If this is not a card in the player's possession, the player forfeits the game.
     # @return the player's chosen card for discarding
     def getDiscard(self) -> CardObj:
-
-        # Find deadwood of hand w/o each card.
-        deadwoodArr = np.zeros(len(self.cards))
-        for i in range(len(self.cards)):
-            # Cannot draw and discard face up card.
-            if self.cards[i] == self.drawnCard and self.drawnCard == self.faceUpCard:
-                continue
-
-            remainingCards = list(self.cards)
-            remainingCards.remove(self.cards[i])
-            bestMeldSets = GinRummyUtil.cardsToBestMeldSets(remainingCards)
-            deadwood = GinRummyUtil.getDeadwoodPoints3(remainingCards) if len(bestMeldSets) == 0 \
-                else GinRummyUtil.getDeadwoodPoints1(bestMeldSets[0], remainingCards)
-            deadwoodArr[i] = deadwood
-
-
-        # Find available melds for each card.
-        meldsArr = np.zeros(len(self.cards)) # parallel
+        # Discard a random card (not just drawn face up) leaving minimal deadwood points.
+        minArg = -1
+        minScore = 10**5
+        candidateCards = np.zeros(len(self.cards)) # parallel
 
         # Look at cards pairwise for availability of melds.
         for i in range(len(self.cards)):
@@ -182,16 +164,32 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
                 card1 = self.cards[i]
                 card2 = self.cards[j]
                 ways = self._waysCompleteMeld(card1, card2)
-                meldsArr[i] += ways
-                meldsArr[j] += ways
+                candidateCards[i] += ways
+                candidateCards[j] += ways
 
-        alpha = 0.2
-        beta = 0.8
-        linComb = meldsArr * alpha + deadwoodArr * beta
+        # Reward cards on belongingness to melds.
+        bestMeldSets = GinRummyUtil.cardsToBestMeldSets(self.cards)
+        if len(bestMeldSets) == 0:
+            minArg = np.argmin(candidateCards)
+            if self.cards[minArg] == self.drawnCard and self.drawnCard == self.faceUpCard:
+                return self.cards[np.argsort(candidateCards)[1]]
+            return self.cards[minArg]
 
-        minArg = np.argmin(linComb)
+        for bestMeldSet in bestMeldSets:
+            candidateCardsTemp = np.copy(candidateCards)
+            for meldSet in bestMeldSet:
+                for k in range(len(self.cards)):
+                    if self.cards[k] == self.drawnCard and self.drawnCard == self.faceUpCard:
+                        candidateCardsTemp[k] += 1000
+                    elif self.cards[k] in meldSet:
+                        candidateCardsTemp[k] += 10
+            currMin = np.amin(candidateCardsTemp)
+            if currMin < minScore:
+                minScore = currMin
+                minArg = np.argmin(candidateCardsTemp)
+
         if self.cards[minArg] == self.drawnCard and self.drawnCard == self.faceUpCard:
-            return self.cards[np.argsort(linComb)[1]]
+            return self.cards[np.argsort(candidateCardsTemp)[1]]
         return self.cards[minArg]
 
     # Report that the given player has discarded a given card.
