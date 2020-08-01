@@ -339,7 +339,7 @@ if __name__ == "__main__":
     with open('with_rf2.csv', 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-        lst = np.linspace(0,1,101).tolist()
+        lst = np.linspace(0,1,26).tolist()
 
         for alpha in lst:
             numP1Wins = 0
