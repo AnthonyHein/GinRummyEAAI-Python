@@ -89,6 +89,12 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
     def __init__(self):
         # Random Forrest Classifier
         self.rf = dill.load(open("rf.obj","rb"))
+        self.alpha = 0.2
+        self.beta = 0.8
+
+    def setAlpha(self, alpha):
+        self.alpha = alpha
+        self.beta = 1 - alpha
 
     # Inform player of 0-based player number (0/1), starting player number (0/1), and dealt cards
     # @param playerNum player's 0-based player number (0/1)
@@ -185,9 +191,7 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
                 meldsArr[i] += ways
                 meldsArr[j] += ways
 
-        alpha = 0.2
-        beta = 0.8
-        linComb = meldsArr * alpha + deadwoodArr * beta
+        linComb = meldsArr * self.alpha + deadwoodArr * self.beta
 
         minArg = np.argmin(linComb)
         if self.cards[minArg] == self.drawnCard and self.drawnCard == self.faceUpCard:
