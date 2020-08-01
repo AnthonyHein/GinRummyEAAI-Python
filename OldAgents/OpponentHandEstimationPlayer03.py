@@ -45,42 +45,41 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
     #---------------------------------------------------------------------------
     # FUNCTIONS FOR THE RANDOM FORREST CLASSIFIER
 
-    def _waysCompleteMeld(self, card1, card2, probs):
+    def _waysCompleteMeld(self, card1, card2):
         ways = 0
-
         # Run?
         highId = max(card1.getId(), card2.getId())
         lowId = min(card1.getId(), card2.getId())
         if highId - lowId <= 2:
             if highId - lowId == 2:
-                ways += (1 - self.unavailableCards[(highId + lowId) // 2]) * (1 - probs[(highId + lowId) // 2]) # in between is available
+                ways += 1 if self.unavailableCards[(highId + lowId) // 2] == 0 else 0 # in between is available
                 ways += 2 if self.ownCards[(highId + lowId) // 2] == 1 else 0 # we actually have that meld
             else:
                 if lowId != 0:
-                    ways += (1 - self.unavailableCards[lowId - 1]) * (1 - probs[lowId - 1]) # below is available
+                    ways +=  1 if self.unavailableCards[lowId - 1] == 0 else 0 # below is available
                     ways += 2 if self.ownCards[lowId - 1] == 1 else 0 # we actually have that meld
                 if highId != 51:
-                    ways += (1 - self.unavailableCards[highId + 1]) * (1 - probs[highId + 1]) # above is available
+                    ways += 1 if self.unavailableCards[highId + 1] == 0 else 0 # above is available
                     ways += 2 if self.ownCards[highId + 1] == 1 else 0 # we actually have that meld
         # Set?
         if (highId - lowId) % 13 == 0:
             i = lowId + 13
             while i < 52:
                 if i != highId:
-                    ways += (1 - self.unavailableCards[i]) * (1 - probs[i])
+                    ways += 1 if self.unavailableCards[i] == 0 else 0 # some set is available
                     ways += 2 if self.ownCards[i] == 1 else 0 # we actually have that meld
                 i += 13
         return ways
 
 
-    def _predictOpponentHand(self):
-        probs = self.rf.predict_proba([self.state])
+    def _predictOpponentHand(rf, state):
+        probs = rf.predict_proba([state])
         return np.array(probs)[:,:,1][:,0]
 
-    def _predictCardsT(self, hand_probs, t):
+    def _predictCardsT(hand_probs, t):
         return np.array([roundt(p, t) for p in hand_probs])
 
-    def _predictCardsMax(self, hand_probs):
+    def _predictCardsMax(hand_probs):
         inds = hand_probs.argsort()[-10:][::-1]
         ret = np.zeros((52))
         ret[inds] = 1
@@ -183,14 +182,12 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
         # Find available melds for each card.
         meldsArr = np.zeros(len(self.cards)) # parallel
 
-        probs = self._predictOpponentHand()
-
         # Look at cards pairwise for availability of melds.
         for i in range(len(self.cards)):
             for j in range(i + 1, len(self.cards)):
                 card1 = self.cards[i]
                 card2 = self.cards[j]
-                ways = self._waysCompleteMeld(card1, card2, probs)
+                ways = self._waysCompleteMeld(card1, card2)
                 meldsArr[i] += ways
                 meldsArr[j] += ways
 

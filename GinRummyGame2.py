@@ -331,18 +331,27 @@ class GinRummyGame:
 # Test and demonstrate the use of the GinRummyGame class.
 if __name__ == "__main__":
 
-    lst = np.linspace(0,0.5,51).tolist()
     GinRummyGame.setPlayVerbose(False)
     player = OpponentHandEstimationPlayer()
     game = GinRummyGame(SimpleGinRummyPlayer(), player)
-    numGames = 2000
 
-    with open('results.csv', 'w', newline='') as csvfile:
+    with open('results02.csv', 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        for alpha in lst:
-            numP1Wins = 0
-            print("Playing with alpha: " + str(alpha))
-            player.setAlpha(alpha)
-            for i in range(numGames):
-                numP1Wins += game.play()
-            csvwriter.writerow([alpha, numP1Wins / numGames])
+
+        while True:
+
+            low = float(input("Low "))
+            high = float(input("High "))
+            space = int(input("Space "))
+            numGames = int(input("Num "))
+
+            lst = np.linspace(low,high,space).tolist()
+
+            for alpha in lst:
+                numP1Wins = 0
+                print("Playing with alpha: " + str(alpha), end="")
+                player.setAlpha(alpha)
+                for i in range(numGames):
+                    numP1Wins += game.play()
+                print(", Win Rate: " + str(numP1Wins / numGames))
+                csvwriter.writerow([alpha, numP1Wins / numGames])
