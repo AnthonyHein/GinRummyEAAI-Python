@@ -89,7 +89,7 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
 
     def __init__(self):
         # Random Forrest Classifier
-        self.rf = dill.load(open("rf2.obj","rb"))
+        self.rf = dill.load(open("rf.obj","rb"))
         self.alpha = 0.45
         self.beta = 0.55
 
@@ -118,10 +118,11 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
         # row 1 -> known cards in opponent's hand (picked up by opponent and not discarded)
         # row 2 -> past faceUpCards not picked up by opponent
         # row 3 -> your own hand
-        self.state = np.zeros(156)
+        self.state = np.zeros(208)
         self.oppPastDiscards = self.state[0:52]
         self.oppKnownCards = self.state[52:104]
-        self.ownCards = self.state[104:156]
+        self.oppRejectFaceUp = self.state[104:156]
+        self.ownCards = self.state[156:208]
 
         # Take note of current cards in hand.
         for card in cards:
@@ -156,7 +157,7 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
                 self.oppKnownCards[drawnCard.getId()] = 1
             else:
                 self.unavailableCards[self.faceUpCard.getId()] = 1
-                self.oppPastDiscards[self.faceUpCard.getId()] = 1
+                self.oppRejectFaceUp[self.faceUpCard.getId()] = 1
 
     # Get the player's discarded card.  If you took the top card from the discard pile,
     # you must discard a different card.

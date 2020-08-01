@@ -5,16 +5,8 @@ Found in Java by Todd Neller here: https://github.com/tneller/gin-rummy-eaai
 
 Maximize: $(\text{available melds} * \alpha) + (\text{deadwood if card removed} * \beta)$
 
-| Alpha | Beta | Win Rate |
-| ----- | ---- | -------- |
-| 1     | 0    | 0.2      |
-| 0.9   | 0.1  | 0.24     |
-| 0.8   | 0.2  | 0.3      |
-| 0.7   | 0.3  | 0.35     |
-| 0.6   | 0.4  | 0.45     |
-| 0.5   | 0.5  | 0.5      |
-| 0.4   | 0.6  | 0.5      |
-| 0.3   | 0.7  | 0.5      |
-| 0.2   | 0.8  | 0.57     |
-| 0.1   | 0.9  | 0.53     |
-| 0     | 0    | 0.5      |
+GinRummyGame --> O.G., plays 1000 games at preset alpha value. Prints to terminal.
+
+GinRummyGame2 --> Prompts user for alpha range and number of games. Prints to results02.csv.
+
+GinRummyGame3 --> Runs in background (best for running over long periods of time in the background). Prints to with_rf2.csv.
