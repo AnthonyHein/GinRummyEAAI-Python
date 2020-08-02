@@ -334,7 +334,7 @@ if __name__ == "__main__":
     GinRummyGame.setPlayVerbose(False)
     player = OpponentHandEstimationPlayer()
     game = GinRummyGame(SimpleGinRummyPlayer(), player)
-    numGames = 500
+    numGames = 300
 
     with open('with_rf2.csv', 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

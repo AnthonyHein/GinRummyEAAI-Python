@@ -10,3 +10,5 @@ GinRummyGame --> O.G., plays 1000 games at preset alpha value. Prints to termina
 GinRummyGame2 --> Prompts user for alpha range and number of games. Prints to results02.csv.
 
 GinRummyGame3 --> Runs in background (best for running over long periods of time in the background). Prints to with_rf2.csv.
+
+**Please check RF2_Results.csv and RF2_Results.txt for latest alphas and win ratios.**
