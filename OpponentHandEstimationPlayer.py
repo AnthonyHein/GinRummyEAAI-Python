@@ -64,9 +64,9 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
                     ways += 2 if self.ownCards[highId + 1] == 1 else 0 # we actually have that meld
         # Set?
         if (highId - lowId) % 13 == 0:
-            i = lowId + 13
+            i = lowId % 13
             while i < 52:
-                if i != highId:
+                if i != highId and i != lowId:
                     ways += (1 - self.unavailableCards[i]) * (1 - probs[i])
                     ways += 2 if self.ownCards[i] == 1 else 0 # we actually have that meld
                 i += 13
