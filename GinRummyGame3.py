@@ -334,12 +334,12 @@ if __name__ == "__main__":
     GinRummyGame.setPlayVerbose(False)
     player = OpponentHandEstimationPlayer()
     game = GinRummyGame(SimpleGinRummyPlayer(), player)
-    numGames = 300
+    numGames = 200
 
-    with open('with_rf2.csv', 'w', newline='') as csvfile:
+    with open('with_rf2-2.csv', 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
-        lst = np.linspace(0,1,26).tolist()
+        lst = np.linspace(0.10,0.35,7).tolist()
 
         for alpha in lst:
             numP1Wins = 0

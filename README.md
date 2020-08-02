@@ -12,3 +12,10 @@ GinRummyGame2 --> Prompts user for alpha range and number of games. Prints to re
 GinRummyGame3 --> Runs in background (best for running over long periods of time in the background). Prints to with_rf2.csv.
 
 **Please check RF2_Results.csv and RF2_Results.txt for latest alphas and win ratios.**
+
+**with_rf2.csv and with_rf2-2.csv are also for the latest model**
+
+*We have just fixed a bug in the agent regarding line 67, it should only increase (not decrease) the accuracy of the model.
+More tests should be run.*
+
+>Current leading alpha is alpha = 0.15 with results of win ratio 0.57
