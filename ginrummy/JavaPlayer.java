@@ -46,17 +46,38 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 public class JavaPlayer implements GinRummyPlayer {
 
 	// Socket work. ------------------------------------------------------------
-	private Thread sent;
-    private Thread receive;
-    private Socket socket;
+    private Socket socket = null;
 	private BufferedReader stdIn;
 	private PrintWriter out;
+
+    private boolean verbose = false;
 	//--------------------------------------------------------------------------
 
 	// Constructor, doesn't exist in SimpleGinRummyPlayer.java.
 	public JavaPlayer() {
+		// try {
+       //      socket = new Socket("localhost",41869);
+       //  } catch (UnknownHostException e1) {
+       //      // TODO Auto-generated catch block
+       //      e1.printStackTrace();
+       //  } catch (IOException e1) {
+       //      // TODO Auto-generated catch block
+       //      e1.printStackTrace();
+       //  }
+		// try{
+		//     stdIn =new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		//     out = new PrintWriter(socket.getOutputStream(), true);
+       // }catch(Exception e){
+		//    // Pass
+       // }
+	}
+
+	@Override
+	public void startGame(int playerNum, int startingPlayerNum, Card[] cards) {
 		try {
-            socket = new Socket("localhost",10000);
+			if (socket != null)
+				socket.close();
+            socket = new Socket("localhost",41869);
         } catch (UnknownHostException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -70,10 +91,7 @@ public class JavaPlayer implements GinRummyPlayer {
        }catch(Exception e){
 		   // Pass
        }
-	}
 
-	@Override
-	public void startGame(int playerNum, int startingPlayerNum, Card[] cards) {
 		String dataStr = "startGame " + playerNum + " " + startingPlayerNum;
 
 		for (int i = 0; i < cards.length; i++) {
@@ -83,7 +101,7 @@ public class JavaPlayer implements GinRummyPlayer {
 			out.write(dataStr);
 			out.flush();
 			String in = stdIn.readLine();
-			System.out.println(in);
+            if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
 			// Pass
 		}
@@ -99,7 +117,7 @@ public class JavaPlayer implements GinRummyPlayer {
 			out.flush();
 			String in = stdIn.readLine();
 			boolean b = Boolean.parseBoolean(in);
-			System.out.println(b);
+			if (verbose) { System.out.println(b); }
 			return b;
 		} catch (Exception e) {
 			// Pass
@@ -109,13 +127,16 @@ public class JavaPlayer implements GinRummyPlayer {
 
 	@Override
 	public void reportDraw(int playerNum, Card drawnCard) {
+		if (drawnCard == null)
+			return;
+
 		String dataStr = "reportDraw " + playerNum + " " + drawnCard.toString();
 
 		try {
 			out.write(dataStr);
 			out.flush();
 			String in = stdIn.readLine();
-			System.out.println(in);
+			if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
 			// Pass
 		}
@@ -130,7 +151,7 @@ public class JavaPlayer implements GinRummyPlayer {
 			out.write(dataStr);
 			out.flush();
 			String in = stdIn.readLine();
-			System.out.println(in);
+			if (verbose) { System.out.println(in); }
 			return Card.strCardMap.get(in);
 		} catch (Exception e) {
 			// Pass
@@ -146,7 +167,7 @@ public class JavaPlayer implements GinRummyPlayer {
 			out.write(dataStr);
 			out.flush();
 			String in = stdIn.readLine();
-			System.out.println(in);
+			if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
 			// Pass
 		}
@@ -160,8 +181,12 @@ public class JavaPlayer implements GinRummyPlayer {
 			out.write(dataStr);
 			out.flush();
 			String in = stdIn.readLine();
+			if (in.equals("null")) {
+				return null;
+			}
+
 			while (!in.equals("")) {
-				System.out.println(in);
+				if (verbose) { System.out.println(in); }
 				ArrayList<Card> meld = new ArrayList<Card>();
 				String[] splited = in.split(" ");
 				for (int i = 0; i < splited.length; i++) {
@@ -184,7 +209,7 @@ public class JavaPlayer implements GinRummyPlayer {
 			out.write(dataStr);
 			out.flush();
 			String in = stdIn.readLine();
-			System.out.println(in);
+			if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
 			// Pass
 		}
