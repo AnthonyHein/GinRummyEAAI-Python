@@ -306,14 +306,14 @@ public class GinRummyGame {
 	 */
 	public static void main(String[] args) {
 		// Single verbose demonstration game
-		// setPlayVerbose(true);
-		// new GinRummyGame(new SimpleGinRummyPlayer(), new JavaPlayer()).play();
+		setPlayVerbose(true);
+		new GinRummyGame(new SimpleGinRummyPlayer(), new JavaPlayer()).play();
 
 		// Multiple non-verbose games
 		// setPlayVerbose(false); // UNCOMMENT THIS AND COMMENT BELOW
 		// int numGames = 1000; // UNCOMMENT THIS AND COMMENT BELOW
 		setPlayVerbose(false); // CHANGE THIS AS DESIRED
-		int numGames = 10; // CHANGE THIS AS DESIRED
+		int numGames = 20; // CHANGE THIS AS DESIRED
 		int numP1Wins = 0;
 		GinRummyGame game = new GinRummyGame(new SimpleGinRummyPlayer(), new JavaPlayer());
 		long startMs = System.currentTimeMillis();

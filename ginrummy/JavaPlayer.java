@@ -46,16 +46,37 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 public class JavaPlayer implements GinRummyPlayer {
 
 	// Socket work. ------------------------------------------------------------
-    private Socket socket = null;
-	private BufferedReader stdIn;
-	private PrintWriter out;
+    static Socket socket;
+	static BufferedReader stdIn;
+	static PrintWriter out;
 
-    private boolean verbose = false;
+    static {
+        try {
+            socket = new Socket("localhost",41869);
+            stdIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        	out = new PrintWriter(socket.getOutputStream(), true);
+        } catch (UnknownHostException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        } catch (Exception e) {
+            // Pass
+        }
+    }
+
+    private boolean verbose = false; // put true for extra print statements
 	//--------------------------------------------------------------------------
 
 	// Constructor, doesn't exist in SimpleGinRummyPlayer.java.
 	public JavaPlayer() {
+        // Pass
+	}
+
+	@Override
+	public void startGame(int playerNum, int startingPlayerNum, Card[] cards) {
 		// try {
+		// 	if (socket != null)
+		// 		socket.close();
        //      socket = new Socket("localhost",41869);
        //  } catch (UnknownHostException e1) {
        //      // TODO Auto-generated catch block
@@ -70,27 +91,6 @@ public class JavaPlayer implements GinRummyPlayer {
        // }catch(Exception e){
 		//    // Pass
        // }
-	}
-
-	@Override
-	public void startGame(int playerNum, int startingPlayerNum, Card[] cards) {
-		try {
-			if (socket != null)
-				socket.close();
-            socket = new Socket("localhost",41869);
-        } catch (UnknownHostException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-		try{
-		    stdIn =new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		    out = new PrintWriter(socket.getOutputStream(), true);
-       }catch(Exception e){
-		   // Pass
-       }
 
 		String dataStr = "startGame " + playerNum + " " + startingPlayerNum;
 
