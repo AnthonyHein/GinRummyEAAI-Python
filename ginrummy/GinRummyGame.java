@@ -313,7 +313,7 @@ public class GinRummyGame {
 		// setPlayVerbose(false); // UNCOMMENT THIS AND COMMENT BELOW
 		// int numGames = 1000; // UNCOMMENT THIS AND COMMENT BELOW
 		setPlayVerbose(false); // CHANGE THIS AS DESIRED
-		int numGames = 20; // CHANGE THIS AS DESIRED
+		int numGames = 500; // CHANGE THIS AS DESIRED
 		int numP1Wins = 0;
 		GinRummyGame game = new GinRummyGame(new SimpleGinRummyPlayer(), new JavaPlayer());
 		long startMs = System.currentTimeMillis();
