@@ -40,7 +40,7 @@ import dill
 
 CardObj = TypeVar('Card')
 
-class OpponentHandEstimationPlayer(GinRummyPlayer):
+class OpponentHandEstimationPlayer2(GinRummyPlayer):
 
     #---------------------------------------------------------------------------
     # FUNCTIONS FOR THE RANDOM FORREST CLASSIFIER
@@ -72,19 +72,9 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
                 i += 13
         return ways
 
-
     def _predictOpponentHand(self):
         probs = self.rf.predict_proba([self.state])
         return np.array(probs)[:,:,1][:,0]
-
-    def _predictCardsT(self, hand_probs, t):
-        return np.array([roundt(p, t) for p in hand_probs])
-
-    def _predictCardsMax(self, hand_probs):
-        inds = hand_probs.argsort()[-10:][::-1]
-        ret = np.zeros((52))
-        ret[inds] = 1
-        return ret
 
     #---------------------------------------------------------------------------
 
@@ -190,14 +180,6 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
                 meldsArr[i] += ways
                 meldsArr[j] += ways
 
-        rankNames = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"]
-        suitNames = ["C", "H", "S", "D"]
-        # for i in range(13):
-        #     for j in range(4):
-        #         print(f"{rankNames[i]}{suitNames[j]}{probs[i+13*j]:.2f}", end=" ")
-        #     print()
-        # print(self.cards, meldsArr, deadwoodArr)
-
         return meldsArr * alpha + deadwoodArr * (1-alpha)
 
     # Get the player's discarded card.  If you took the top card from the discard pile,
@@ -206,8 +188,7 @@ class OpponentHandEstimationPlayer(GinRummyPlayer):
     # @return the player's chosen card for discarding
     def getDiscard(self) -> CardObj:
 
-        linComb = self.getLinComb(self.cards, max(0, 0.75-self.round/15))
-        # print(np.array(self.cards)[np.argsort(linComb)[:4]])
+        linComb = self.getLinComb(self.cards, 1-np.sqrt(self.round/10))
 
         minArg = np.argmin(linComb)
         if self.cards[minArg] == self.drawnCard and self.drawnCard == self.faceUpCard:
