@@ -1,9 +1,9 @@
 from Card import Card
 from Deck import Deck
 
-from OpponentHandEstimationPlayer2 import OpponentHandEstimationPlayer2
+from OpponentHandEstimationPlayer import OpponentHandEstimationPlayer
 
-class SocketPlayer(OpponentHandEstimationPlayer2):
+class SocketPlayer(OpponentHandEstimationPlayer):
 
     #---------------------------------------------------------------------------
     # FUNCTIONS FOR SOCKET SERVER COMMUNICATION

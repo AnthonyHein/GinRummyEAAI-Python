@@ -40,7 +40,7 @@ import dill
 
 CardObj = TypeVar('Card')
 
-class OpponentHandEstimationPlayer2(GinRummyPlayer):
+class OpponentHandEstimationPlayer(GinRummyPlayer):
 
     #---------------------------------------------------------------------------
     # FUNCTIONS FOR THE RANDOM FORREST CLASSIFIER
@@ -53,29 +53,38 @@ class OpponentHandEstimationPlayer2(GinRummyPlayer):
         lowId = min(card1.getId(), card2.getId())
         if highId - lowId <= 2:
             if highId - lowId == 2:
-                ways += (1 - self.unavailableCards[(highId + lowId) // 2]) * (1 - probs[(highId + lowId) // 2]**4) # in between is available
+                ways += (1 - self.unavailableCards[(highId + lowId) // 2]) * (1 - probs[(highId + lowId) // 2]) # in between is available
                 ways += 2 if self.ownCards[(highId + lowId) // 2] == 1 else 0 # we actually have that meld
             else:
                 if lowId != 0:
-                    ways += (1 - self.unavailableCards[lowId - 1]) * (1 - probs[lowId - 1]**4) # below is available
+                    ways += (1 - self.unavailableCards[lowId - 1]) * (1 - probs[lowId - 1]) # below is available
                     ways += 2 if self.ownCards[lowId - 1] == 1 else 0 # we actually have that meld
                 if highId != 51:
-                    ways += (1 - self.unavailableCards[highId + 1]) * (1 - probs[highId + 1]**4) # above is available
+                    ways += (1 - self.unavailableCards[highId + 1]) * (1 - probs[highId + 1]) # above is available
                     ways += 2 if self.ownCards[highId + 1] == 1 else 0 # we actually have that meld
         # Set?
         if (highId - lowId) % 13 == 0:
             i = lowId % 13
             while i < 52:
                 if i != highId and i != lowId:
-                    ways += (1 - self.unavailableCards[i]) * (1 - probs[i]**4)
+                    ways += (1 - self.unavailableCards[i]) * (1 - probs[i])
                     ways += 2 if self.ownCards[i] == 1 else 0 # we actually have that meld
                 i += 13
         return ways
+
 
     def _predictOpponentHand(self):
         probs = self.rf.predict_proba([self.state])
         return np.array(probs)[:,:,1][:,0]
 
+    def _predictCardsT(self, hand_probs, t):
+        return np.array([roundt(p, t) for p in hand_probs])
+
+    def _predictCardsMax(self, hand_probs):
+        inds = hand_probs.argsort()[-10:][::-1]
+        ret = np.zeros((52))
+        ret[inds] = 1
+        return ret
     #---------------------------------------------------------------------------
 
     def __init__(self):
@@ -100,7 +109,6 @@ class OpponentHandEstimationPlayer2(GinRummyPlayer):
         self.drawDiscardBitstrings = [] # long[], or List[int]
         self.faceUpCard = None
         self.drawnCard = None
-        self.round = 0
 
         # Cards discarded and below the top faceup card.
         self.unavailableCards = np.zeros(52)
@@ -150,16 +158,21 @@ class OpponentHandEstimationPlayer2(GinRummyPlayer):
                 self.unavailableCards[self.faceUpCard.getId()] = 1
                 self.oppPastDiscards[self.faceUpCard.getId()] = 1
 
-    def getLinComb(self, cards, alpha):
+    # Get the player's discarded card.  If you took the top card from the discard pile,
+    # you must discard a different card.
+    # If this is not a card in the player's possession, the player forfeits the game.
+    # @return the player's chosen card for discarding
+    def getDiscard(self) -> CardObj:
+
         # Find deadwood of hand w/o each card.
-        deadwoodArr = np.zeros(len(cards))
-        for i in range(len(cards)):
+        deadwoodArr = np.zeros(len(self.cards))
+        for i in range(len(self.cards)):
             # Cannot draw and discard face up card.
-            if cards[i] == self.drawnCard and self.drawnCard == self.faceUpCard:
+            if self.cards[i] == self.drawnCard and self.drawnCard == self.faceUpCard:
                 continue
 
-            remainingCards = list(cards)
-            remainingCards.remove(cards[i])
+            remainingCards = list(self.cards)
+            remainingCards.remove(self.cards[i])
             bestMeldSets = GinRummyUtil.cardsToBestMeldSets(remainingCards)
             deadwood = GinRummyUtil.getDeadwoodPoints3(remainingCards) if len(bestMeldSets) == 0 \
                 else GinRummyUtil.getDeadwoodPoints1(bestMeldSets[0], remainingCards)
@@ -167,28 +180,20 @@ class OpponentHandEstimationPlayer2(GinRummyPlayer):
 
 
         # Find available melds for each card.
-        meldsArr = np.zeros(len(cards)) # parallel
+        meldsArr = np.zeros(len(self.cards)) # parallel
 
         probs = self._predictOpponentHand()
 
         # Look at cards pairwise for availability of melds.
-        for i in range(len(cards)):
-            for j in range(i + 1, len(cards)):
-                card1 = cards[i]
-                card2 = cards[j]
+        for i in range(len(self.cards)):
+            for j in range(i + 1, len(self.cards)):
+                card1 = self.cards[i]
+                card2 = self.cards[j]
                 ways = self._waysCompleteMeld(card1, card2, probs)
                 meldsArr[i] += ways
                 meldsArr[j] += ways
 
-        return meldsArr * alpha + deadwoodArr * (1-alpha)
-
-    # Get the player's discarded card.  If you took the top card from the discard pile,
-    # you must discard a different card.
-    # If this is not a card in the player's possession, the player forfeits the game.
-    # @return the player's chosen card for discarding
-    def getDiscard(self) -> CardObj:
-
-        linComb = self.getLinComb(self.cards, 1-np.sqrt(self.round/10))
+        linComb = meldsArr * self.alpha + deadwoodArr * self.beta
 
         minArg = np.argmin(linComb)
         if self.cards[minArg] == self.drawnCard and self.drawnCard == self.faceUpCard:
@@ -201,7 +206,6 @@ class OpponentHandEstimationPlayer2(GinRummyPlayer):
     def reportDiscard(self, playerNum: int, discardedCard: CardObj) -> None:
         # Ignore other player discards.  Remove from cards if playerNum is this player.
         self.faceUpCard = discardedCard
-        self.round += 1
         if playerNum == self.playerNum:
             self.cards.remove(discardedCard)
             self.ownCards[discardedCard.getId()] = 0
