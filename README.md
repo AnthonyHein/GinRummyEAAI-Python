@@ -3,7 +3,7 @@ Gin Rummy software for the Gin Rummy EAAI Undergraduate Research Challenge (tran
 
 Found in Java by Todd Neller here: https://github.com/tneller/gin-rummy-eaai
 
-PrincetonGinPlayer.class is the current submission, compiled with the provided vermouth.jar.
+PrincetonGinPlayer.class is the current submission, compiled with the provided vermouth.jar. Check [here](https://github.com/MTU-Tonic/vermouth/tree/master) for the tournament code.
 
 Test with:
 
