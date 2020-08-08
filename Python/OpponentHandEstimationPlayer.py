@@ -40,7 +40,7 @@ import dill
 
 CardObj = TypeVar('Card')
 
-class OpponentHandEstimationPlayer2(GinRummyPlayer):
+class OpponentHandEstimationPlayer(GinRummyPlayer):
 
     #---------------------------------------------------------------------------
     # FUNCTIONS FOR THE RANDOM FORREST CLASSIFIER
