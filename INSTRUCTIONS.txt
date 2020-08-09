@@ -1,3 +1,5 @@
+Download our submission from this URL: 
+
 To verify that our submission is working as intended please follow the below instructions:
 
 Run the accompanying Python server. The program will not work without this.
@@ -23,6 +25,11 @@ $ java -jar vermouth.jar --oneall --games 1 --agents 'file:./PrincetonGinPlayer'
 and observe the output .csv files within the produced .zip to verify that it is working.
 
 For your convenience, we have also included within the submitted .zip all associated .java source code files.
+
+** If you need to compile these classes yourself, then use the following commands to compile (run in outermost directory):
+
+$ javac *.java ginrummy/*.java
+$ javac -cp ".:./vermouth.jar" PrincetonGinPlayer.java SimpleGinRummyPlayer.java
 
 Thank you,
 
