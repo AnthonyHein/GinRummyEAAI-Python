@@ -1,4 +1,4 @@
-package ginrummy;
+import ginrummy.*;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -33,7 +33,7 @@ Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 
  */
-public class SimpleGinRummyPlayer implements GinRummyPlayer {
+public class SimpleGinRummyPlayer implements ginrummy.GinRummyPlayer {
 	protected int playerNum;
 	@SuppressWarnings("unused")
 	protected int startingPlayerNum;

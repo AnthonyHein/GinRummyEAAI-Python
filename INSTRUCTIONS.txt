@@ -1,0 +1,29 @@
+To verify that our submission is working as intended please follow the below instructions:
+
+Run the accompanying Python server. The program will not work without this.
+
+* Ensure that you have Anaconda Python 3.8 installed on your machine with the module dill installed via pip.
+* Navigate to the PrincetonPythonServer folder within the PrincetonGinRummyEAAISubmission folder.
+* Run this with $ python3 Server.py
+
+As a test, run the given TestPrincetonPlayer.class file with the command
+
+$ java TestPrincetonPlayer
+
+This function operates similarly to GinRummyGame.java. You should see 1 verbose game and 1 non-verbose game. This
+will conclude with a statement "ALL GOOD!"; if you do not see this contact a team member.
+
+** Our submission is PrincetonGinPlayer.class.
+
+The submitted classes (PrincetonGinPlayer.class and SimpleGinRummyPlayer.class) were compiled with vermouth.jar, so as
+a final test you can run
+
+$ java -jar vermouth.jar --oneall --games 1 --agents 'file:./PrincetonGinPlayer' 'file:./SimpleGinRummyPlayer'
+
+and observe the output .csv files within the produced .zip to verify that it is working.
+
+For your convenience, we have also included within the submitted .zip all associated .java source code files.
+
+Thank you,
+
+The Princeton Gin Rummy Player Team

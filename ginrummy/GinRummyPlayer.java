@@ -3,7 +3,7 @@ package ginrummy;
 import java.util.ArrayList;
 /*
  * GinRummyPlayer - interface for Gin Rummy player
- * 
+ *
 Game outline
 - startGame
 - initial card option: willDrawFaceUpCard to first player.  If declined, willDrawFaceUpCard to second player.
@@ -59,54 +59,54 @@ public interface GinRummyPlayer {
 	 * @return whether or not player will draw the given face-up card on the draw pile
 	 */
 	boolean willDrawFaceUpCard(Card card);
-	
+
 	/**
-	 * Report that the given player has drawn a given card and, if known, what the card is.  
+	 * Report that the given player has drawn a given card and, if known, what the card is.
 	 * If the card is unknown because it is drawn from the face-down draw pile, the drawnCard is null.
 	 * Note that a player that returns false for willDrawFaceUpCard will learn of their face-down draw from this method.
 	 * @param playerNum - player drawing a card
 	 * @param drawnCard - the card drawn or null, depending on whether the card is known to the player or not, respectively.
 	 */
 	void reportDraw(int playerNum, Card drawnCard);
-	
+
 	/**
-	 * Get the player's discarded card.  If you took the top card from the discard pile, 
-	 * you must discard a different card. 
+	 * Get the player's discarded card.  If you took the top card from the discard pile,
+	 * you must discard a different card.
 	 * If this is not a card in the player's possession, the player forfeits the game.
 	 * @return the player's chosen card for discarding
 	 */
 	Card getDiscard();
-	
-	
+
+
 	/**
 	 * Report that the given player has discarded a given card.
 	 * @param playerNum the discarding player
 	 * @param discardedCard the card that was discarded
 	 */
 	void reportDiscard(int playerNum, Card discardedCard);
-	
+
 	/**
-	 * At the end of each turn, this method is called and the player that cannot (or will not) end the round will return a null value.  
-	 * However, the first player to "knock" (that is, end the round), and then their opponent, will return an ArrayList of ArrayLists of melded cards.  
+	 * At the end of each turn, this method is called and the player that cannot (or will not) end the round will return a null value.
+	 * However, the first player to "knock" (that is, end the round), and then their opponent, will return an ArrayList of ArrayLists of melded cards.
 	 * All other cards are counted as "deadwood", unless they can be laid off (added to) the knocking player's melds.
 	 * When final melds have been reported for the other player, a player should return their final melds for the round.
 	 * @return null if continuing play and opponent hasn't melded, or an ArrayList of ArrayLists of melded cards.
 	 */
 	ArrayList<ArrayList<Card>> getFinalMelds();
-	
+
 	/**
 	 * When an player has ended play and formed melds, the melds (and deadwood) are reported to both players.
 	 * @param playerNum player that has revealed melds
 	 * @param melds an ArrayList of ArrayLists of melded cards with the last ArrayList (possibly empty) being deadwood.
 	 */
 	void reportFinalMelds(int playerNum, ArrayList<ArrayList<Card>> melds);
-	
+
 	/**
 	 * Report current player scores, indexed by 0-based player number.
 	 * @param scores current player scores, indexed by 0-based player number
 	 */
 	void reportScores(int[] scores);
-	
+
 	/**
 	 * Report layoff actions.
 	 * @param playerNum player laying off cards
@@ -114,12 +114,12 @@ public interface GinRummyPlayer {
 	 * @param opponentMeld the opponent meld that card is being added to
 	 */
 	void reportLayoff(int playerNum, Card layoffCard, ArrayList<Card> opponentMeld);
-	
+
 	/**
 	 * Report the final hands of players.
 	 * @param playerNum player of hand reported
 	 * @param hand complete hand of given player
 	 */
 	void reportFinalHand(int playerNum, ArrayList<Card> hand);
-	
+
 }

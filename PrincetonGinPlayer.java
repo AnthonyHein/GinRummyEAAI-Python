@@ -2,6 +2,7 @@ import ginrummy.*;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 // Socket work. ----------------------------------------------------------------
 import java.io.BufferedReader;
@@ -50,17 +51,34 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 	static BufferedReader stdIn;
 	static PrintWriter out;
 
+    private static void notifyOfError() {
+        Scanner myInput = new Scanner( System.in );
+        System.out.print(   "=================================================================================================\n" +
+                            " __      __   __ _   _ __   _ __   (_)  _ __     __ _\n" +
+                            " \\ \\ /\\ / /  / _` | | '__| | '_ \\  | | | '_ \\   / _` |\n" +
+                            "  \\ V  V /  | (_| | | |    | | | | | | | | | | | (_| |\n" +
+                            "   \\_/\\_/    \\__,_| |_|    |_| |_| |_| |_| |_|  \\__, |\n" +
+                            "                                                |___/\n" +
+                            "=================================================================================================\n" +
+                            "The accompanying Python server does not appear to be running or prematurely terminated." +
+                            "Please start the server and run this program again. Enter an integer to proceed: " );
+        int a = myInput.nextInt();
+        return;
+    }
+
     static {
         try {
             socket = new Socket("localhost",41869);
             stdIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         	out = new PrintWriter(socket.getOutputStream(), true);
         } catch (UnknownHostException e1) {
+            notifyOfError();
             e1.printStackTrace();
         } catch (IOException e1) {
+            notifyOfError();
             e1.printStackTrace();
         } catch (Exception e) {
-            // Pass
+            notifyOfError();
         }
     }
 
@@ -103,7 +121,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 			String in = stdIn.readLine();
             if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
-			// Pass
+			notifyOfError();
 		}
 
 	}
@@ -120,7 +138,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 			if (verbose) { System.out.println(b); }
 			return b;
 		} catch (Exception e) {
-			// Pass
+			notifyOfError();
 		}
 		return false;
 	}
@@ -138,7 +156,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 			String in = stdIn.readLine();
 			if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
-			// Pass
+			notifyOfError();
 		}
 	}
 
@@ -154,7 +172,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 			if (verbose) { System.out.println(in); }
 			return Card.strCardMap.get(in);
 		} catch (Exception e) {
-			// Pass
+			notifyOfError();
 		}
 		return null;
 	}
@@ -169,7 +187,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 			String in = stdIn.readLine();
 			if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
-			// Pass
+			notifyOfError();
 		}
 	}
 
@@ -197,7 +215,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 			}
 			return meldList;
 		} catch (Exception e) {
-			// Pass
+			notifyOfError();
 		}
 		return null;
 	}
@@ -211,7 +229,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 			String in = stdIn.readLine();
 			if (verbose) { System.out.println(in); }
 		} catch (Exception e) {
-			// Pass
+			notifyOfError();
 		}
 	}
 
@@ -234,7 +252,7 @@ public class PrincetonGinPlayer implements ginrummy.GinRummyPlayer {
 	}
 
 	public static void main(String[] args) {
-		JavaPlayer player = new JavaPlayer();
+		PrincetonGinPlayer player = new PrincetonGinPlayer();
 		Card[] cards = {
 			new Card(0,3),
 			new Card(0,2),

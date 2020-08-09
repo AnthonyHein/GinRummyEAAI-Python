@@ -9,27 +9,6 @@ Test with:
 
 ```shell
 javac -cp ".:./vermouth.jar" PrincetonGinPlayer.java
-java -jar vermouth.jar    --oneall    --games 100    --agents 'file:./PrincetonGinPlayer' 'file:./PrincetonGinPlayer'
-```
-
-Alternatively, move a copy of SimpleGinRummyPlayer.java to the outer folder, change line 1 to:
-
-```java
-import ginrummy.*;
-```
-
-Change line 36 to:
-
-```java
-public class SimpleGinRummyPlayer implements ginrummy.GinRummyPlayer {
-    ...
-}
-```
-
-Finally, run:
-
-```shell
-javac -cp ".:./vermouth.jar" PrincetonGinPlayer.java
 javac -cp ".:./vermouth.jar" SimpleGinRummyPlayer.java
 java -jar vermouth.jar    --oneall    --games 100    --agents 'file:./PrincetonGinPlayer' 'file:./SimpleGinRummyPlayer'
 ```
