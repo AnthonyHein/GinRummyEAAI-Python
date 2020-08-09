@@ -5,3 +5,5 @@ rf2.obj
 .ipynb_checkpoints
 .DS_Store
 *.class
+Python/rf2.obj
+*.zip
